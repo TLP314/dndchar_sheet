@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern D&D 5e Character Sheet V6.3 Anurag S.</title> <!-- Version bump -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body> <!-- Body tag is crucial, data-theme will be added by JS -->
+    <header class="sheet-header">
+        <h1>Modern D&D 5e Character Sheet</h1>
+        <div class="header-controls">
+            <button id="dark-mode-toggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+            <div class="save-load-controls">
+                <button id="save-button" title="Save Character (JSON)"><i class="fas fa-save"></i> Save</button>
+                <label for="load-file" class="load-button-label" title="Load Character (JSON)"><i class="fas fa-upload"></i> Load</label>
+                <input type="file" id="load-file" accept=".json" style="display: none;">
+                <button id="print-button" title="Print Sheet"><i class="fas fa-print"></i> Print</button>
+            </div>
+        </div>
+    </header>
+
+    <form id="character-sheet-modern">
+
+        <!-- === Character Summary Section - REVISED STRUCTURE v6.3 === -->
+        <section class="character-summary card">
+            <div class="summary-top-row"> <!-- Name, Level, XP on one row -->
+                <div class="form-group summary-name">
+                    <label for="charname">Character Name</label>
+                    <input type="text" id="charname" name="charname" placeholder="Enter Name">
+                </div>
+                <div class="summary-level-xp-group"> <!-- Group Level and XP together -->
+                    <div class="form-group summary-level">
+                        <label for="level">Level</label>
+                        <input type="number" id="level" name="level" min="1" max="20" value="1">
+                    </div>
+                    <div class="form-group summary-xp">
+                        <label for="xp">XP</label>
+                        <input type="number" id="xp" name="xp" value="0" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="summary-details-grid"> <!-- Details below -->
+                <div class="form-group"> <label for="classlevel">Class</label> <input type="text" id="classlevel" name="classlevel"> </div>
+                <div class="form-group"> <label for="subclass">Subclass</label> <input type="text" id="subclass" name="subclass"> </div>
+                <div class="form-group"> <label for="species">Species</label> <input type="text" id="species" name="species"> </div>
+                <div class="form-group"> <label for="background">Background</label> <input type="text" id="background" name="background"> </div>
+                <div class="form-group"> <label for="alignment">Alignment</label> <input type="text" id="alignment" name="alignment"> </div>
+            </div>
+        </section>
+        <!-- === END Character Summary Section === -->
+
+        <!-- === Main Layout (2 Columns) === -->
+        <div class="sheet-layout">
+
+            <!-- === Column 1: Abilities, Skills, Proficiencies, Flavor === -->
+            <div class="layout-column column-1">
+
+                 <section class="card core-stats">
+                    <h2 class="card-header">Core Stats</h2>
+                    <div class="grid-3-col-auto">
+                         <div class="stat-block"> <label>Proficiency Bonus</label> <div class="calculated-field main-calc" id="proficiency-bonus">+2</div> </div>
+                         <div class="stat-block"> <label>Passive Perception</label> <div class="calculated-field main-calc" id="passive-perception">10</div> </div>
+                         <div class="stat-block"> <label for="size">Size</label> <input type="text" id="size" name="size" value="Medium" class="main-stat-input" style="text-align: center;"> </div>
+                         <div class="stat-block"> <label for="inspiration">Inspiration</label> <input type="checkbox" class="inspiration-check" id="inspiration" name="inspiration"> </div>
+                    </div>
+                </section>
+
+                <section class="card abilities">
+                    <h2 class="card-header">Abilities & Skills</h2>
+                    <div class="abilities-grid">
+                        <!-- Strength -->
+                        <div class="ability-box" id="str-box">
+                            <h3>Strength</h3>
+                            <div class="score-mod-group"> <input type="number" class="ability-score" id="str-score" name="str_score" value="10" min="1" max="30" title="Strength Score"> <div class="ability-mod calculated-value" id="str-mod" title="Strength Modifier">+0</div> </div>
+                            <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="str-save-prof" name="str_save_prof" title="Proficient?"> <span class="calculated-value save-value" id="str-save-value">+0</span> <label for="str-save-prof">Saving Throw</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="athletics-prof" name="athletics_prof" data-ability="str" title="Proficient?"> <span class="calculated-value skill-value" id="athletics-value">+0</span> <label for="athletics-prof">Athletics</label> </div> </div>
+                        </div>
+                        <!-- Dexterity -->
+                        <div class="ability-box" id="dex-box">
+                            <h3>Dexterity</h3>
+                            <div class="score-mod-group"> <input type="number" class="ability-score" id="dex-score" name="dex_score" value="10" min="1" max="30" title="Dexterity Score"> <div class="ability-mod calculated-value" id="dex-mod" title="Dexterity Modifier">+0</div> </div>
+                            <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="dex-save-prof" name="dex_save_prof" title="Proficient?"> <span class="calculated-value save-value" id="dex-save-value">+0</span> <label for="dex-save-prof">Saving Throw</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="acrobatics-prof" name="acrobatics_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value" id="acrobatics-value">+0</span> <label for="acrobatics-prof">Acrobatics</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="sleight-of-hand-prof" name="sleight_of_hand_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value" id="sleight-of-hand-value">+0</span> <label for="sleight-of-hand-prof">Sleight of Hand</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="stealth-prof" name="stealth_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value" id="stealth-value">+0</span> <label for="stealth-prof">Stealth</label> </div> </div>
+                        </div>
+                        <!-- Constitution -->
+                        <div class="ability-box" id="con-box">
+                            <h3>Constitution</h3>
+                            <div class="score-mod-group"> <input type="number" class="ability-score" id="con-score" name="con_score" value="10" min="1" max="30" title="Constitution Score"> <div class="ability-mod calculated-value" id="con-mod" title="Constitution Modifier">+0</div> </div>
+                            <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="con-save-prof" name="con_save_prof" title="Proficient?"> <span class="calculated-value save-value" id="con-save-value">+0</span> <label for="con-save-prof">Saving Throw</label> </div> </div>
+                        </div>
+                        <!-- Intelligence -->
+                        <div class="ability-box" id="int-box">
+                            <h3>Intelligence</h3>
+                            <div class="score-mod-group"> <input type="number" class="ability-score" id="int-score" name="int_score" value="10" min="1" max="30" title="Intelligence Score"> <div class="ability-mod calculated-value" id="int-mod" title="Intelligence Modifier">+0</div> </div>
+                            <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="int-save-prof" name="int_save_prof" title="Proficient?"> <span class="calculated-value save-value" id="int-save-value">+0</span> <label for="int-save-prof">Saving Throw</label> </div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="arcana-prof" name="arcana_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value" id="arcana-value">+0</span><label for="arcana-prof">Arcana</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="history-prof" name="history_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value" id="history-value">+0</span><label for="history-prof">History</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="investigation-prof" name="investigation_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value" id="investigation-value">+0</span><label for="investigation-prof">Investigation</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="nature-prof" name="nature_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value" id="nature-value">+0</span><label for="nature-prof">Nature</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="religion-prof" name="religion_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value" id="religion-value">+0</span><label for="religion-prof">Religion</label></div> </div>
+                        </div>
+                        <!-- Wisdom -->
+                         <div class="ability-box" id="wis-box">
+                             <h3>Wisdom</h3>
+                             <div class="score-mod-group"> <input type="number" class="ability-score" id="wis-score" name="wis_score" value="10" min="1" max="30" title="Wisdom Score"> <div class="ability-mod calculated-value" id="wis-mod" title="Wisdom Modifier">+0</div> </div>
+                             <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="wis-save-prof" name="wis_save_prof" title="Proficient?"> <span class="calculated-value save-value" id="wis-save-value">+0</span> <label for="wis-save-prof">Saving Throw</label> </div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="animal-handling-prof" name="animal_handling_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value" id="animal-handling-value">+0</span><label for="animal-handling-prof">Animal Handling</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="insight-prof" name="insight_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value" id="insight-value">+0</span><label for="insight-prof">Insight</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="medicine-prof" name="medicine_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value" id="medicine-value">+0</span><label for="medicine-prof">Medicine</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="perception-prof" name="perception_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value" id="perception-value">+0</span><label for="perception-prof">Perception</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="survival-prof" name="survival_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value" id="survival-value">+0</span><label for="survival-prof">Survival</label></div> </div>
+                        </div>
+                        <!-- Charisma -->
+                        <div class="ability-box" id="cha-box">
+                             <h3>Charisma</h3>
+                             <div class="score-mod-group"> <input type="number" class="ability-score" id="cha-score" name="cha_score" value="10" min="1" max="30" title="Charisma Score"> <div class="ability-mod calculated-value" id="cha-mod" title="Charisma Modifier">+0</div> </div>
+                             <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="cha-save-prof" name="cha_save_prof" title="Proficient?"> <span class="calculated-value save-value" id="cha-save-value">+0</span> <label for="cha-save-prof">Saving Throw</label> </div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="deception-prof" name="deception_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value" id="deception-value">+0</span><label for="deception-prof">Deception</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="intimidation-prof" name="intimidation_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value" id="intimidation-value">+0</span><label for="intimidation-prof">Intimidation</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="performance-prof" name="performance_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value" id="performance-value">+0</span><label for="performance-prof">Performance</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="persuasion-prof" name="persuasion_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value" id="persuasion-value">+0</span><label for="persuasion-prof">Persuasion</label></div> </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card proficiencies">
+                    <h2 class="card-header">Proficiencies & Languages</h2>
+                    <div class="grid-2-col"> <div class="prof-group"> <h4>Armor Training</h4> <div class="checkbox-group"> <div><input type="checkbox" id="prof-light-armor" name="prof_light_armor"><label for="prof-light-armor">Light</label></div> <div><input type="checkbox" id="prof-medium-armor" name="prof_medium_armor"><label for="prof-medium-armor">Medium</label></div> <div><input type="checkbox" id="prof-heavy-armor" name="prof_heavy_armor"><label for="prof-heavy-armor">Heavy</label></div> <div><input type="checkbox" id="prof-shields" name="prof_shields"><label for="prof-shields">Shields</label></div> </div> </div> <div class="prof-group"> <label for="prof-weapons">Weapon Proficiencies</label> <textarea id="prof-weapons" name="prof_weapons" rows="3"></textarea> </div> <div class="prof-group"> <label for="prof-tools">Tool Proficiencies</label> <textarea id="prof-tools" name="prof_tools" rows="3"></textarea> </div> <div class="prof-group"> <label for="languages">Languages</label> <textarea id="languages" name="languages" rows="3"></textarea> </div> </div>
+                </section>
+
+                <section class="card character-flavor">
+                     <h2 class="card-header">Character Details</h2>
+                     <div class="grid-2-col">
+                        <div class="form-group"> <label for="appearance">Appearance</label> <textarea id="appearance" name="appearance" rows="5"></textarea> </div>
+                        <div class="form-group"> <label for="backstory">Backstory & Personality</label> <textarea id="backstory" name="backstory" rows="5"></textarea> </div>
+                     </div>
+                 </section>
+
+            </div>
+
+            <!-- === Column 2: Combat, Equipment, Spells, Features === -->
+            <div class="layout-column column-2">
+                <section class="card combat-stats"> <h2 class="card-header">Combat</h2> <div class="grid-3-col"> <div class="stat-block"> <label for="ac">Armor Class</label> <input type="number" class="main-stat-input" id="ac" name="ac" value="10"> </div> <div class="stat-block"> <label>Initiative</label> <div class="calculated-field main-calc" id="initiative">+0</div> </div> <div class="stat-block"> <label for="speed-base">Speed</label> <input type="number" class="main-stat-input" id="speed-base" name="speed_base" value="30"> </div> </div> <div class="hp-section"> <h4>Hit Points</h4> <div class="hp-grid"> <div class="form-group"> <label for="hp-max">Maximum</label> <input type="number" id="hp-max" name="hp_max" value="10"> </div> <div class="form-group"> <label for="hp-current">Current</label> <input type="number" id="hp-current" name="hp_current" value="10"> </div> <div class="form-group"> <label for="hp-temp">Temporary</label> <input type="number" id="hp-temp" name="hp_temp" value="0"> </div> <div class="form-group"> <label>Total</label> <div id="hp-total-display" class="calculated-field hp-total">10</div> </div> </div> </div> <div class="hd-ds-section"> <div class="hit-dice-area"> <h4>Hit Dice</h4> <div class="hd-inputs"> <div class="form-group"> <label for="hd-total">Total Dice</label> <input type="text" id="hd-total" name="hd_total" placeholder="e.g., 1d8"> </div> <div class="form-group"> <label for="hd-spent">Dice Spent</label> <input type="number" id="hd-spent" name="hd_spent" value="0" min="0"> </div> </div> </div> <div class="death-saves-area"> <h4>Death Saves</h4> <div class="ds-checks"> <div class="ds-group"> <span>Successes</span> <div> <input type="checkbox" id="ds-succ-1" name="ds_succ_1"> <input type="checkbox" id="ds-succ-2" name="ds_succ_2"> <input type="checkbox" id="ds-succ-3" name="ds_succ_3"> </div> </div> <div class="ds-group"> <span>Failures</span> <div> <input type="checkbox" id="ds-fail-1" name="ds_fail_1"> <input type="checkbox" id="ds-fail-2" name="ds_fail_2"> <input type="checkbox" id="ds-fail-3" name="ds_fail_3"> </div> </div> </div> </div> </div> </section>
+                <section class="card spellcasting"> <h2 class="card-header">Spellcasting</h2> <div class="spellcasting-info-grid"> <div class="form-group"> <label for="spellcasting-ability" style="text-align: center;">Spellcasting Ability</label> <select id="spellcasting-ability" name="spellcasting_ability"> <option value="none">None</option> <option value="str">STR</option> <option value="dex">DEX</option> <option value="con">CON</option> <option value="int">INT</option> <option value="wis">WIS</option> <option value="cha">CHA</option> </select> </div> <div class="stat-block"> <label>Spellcasting Modifier</label> <div class="calculated-field" id="spellcasting-mod">N/A</div> </div> <div class="stat-block"> <label>Spell Save DC</label> <div class="calculated-field" id="spell-save-dc">N/A</div> </div> <div class="stat-block"> <label>Spell Attack Bonus</label> <div class="calculated-field" id="spell-attack-bonus">N/A</div> </div> </div> <div class="spell-slots-area"> <h4>Spell Slots</h4> <div class="spell-slots-grid-modern"> <script>/* Script generates slots */ const modernSpellSlotsGrid = document.querySelector('.spell-slots-grid-modern'); const modernSlotMaxValues = { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1 }; if (modernSpellSlotsGrid) { for (let i = 1; i <= 9; i++) { const maxSlots = modernSlotMaxValues[i] !== undefined ? modernSlotMaxValues[i] : 0; modernSpellSlotsGrid.innerHTML += `<div class="spell-slot-level-modern" id="modern-spell-slots-level-${i}" data-level="${i}"><label class="slot-level-label-modern">Lvl ${i}</label><div class="slot-total-modern"><label for="modern-slots-total-${i}">Total:</label><input type="number" id="modern-slots-total-${i}" name="slots_total_${i}" class="slot-total-input" value="0" min="0" max="${maxSlots}"></div><div class="slot-visual-modern" id="modern-slot-visual-${i}"></div></div>`; } } else { console.error("Could not find '.spell-slots-grid-modern' container"); } </script> </div> </div> <div class="spells-list-area"> <div class="card-header dynamic-list-header no-border"> <h4>Cantrips & Spells</h4> <button type="button" id="add-spell-button" class="action-button add-button" title="Add Spell"><i class="fas fa-plus"></i></button> </div> <div class="dynamic-list-table spell-table"> <div class="dynamic-list-header-row spell-header-row"> <span class="lvl-col">Lvl</span> <span style="padding-left: 15px;">Name</span> <span class="comp-col">V/S/M</span> <span class="notes-col" style="padding-left: 15px;">Notes / Details</span> <span class="action-col"></span> </div> <div id="spell-list-content" class="dynamic-list-content"> <!-- Dynamic Rows --> </div> </div> </div> </section> 
+                <section class="card attacks-cantrips"> <div class="card-header dynamic-list-header"> <h2>Weapons</h2> <button type="button" id="add-weapon-button" class="action-button add-button" title="Add Attack/Cantrip"><i class="fas fa-plus"></i></button> </div> <div class="dynamic-list-table"> <div class="dynamic-list-header-row attack-header-row"> <span>Name</span> <span>Atk Bonus / DC</span> <span>Damage & Type</span> <span class="notes-col">Notes</span> <span class="action-col"></span> </div> <div id="weapons-list-content" class="dynamic-list-content"> <!-- Dynamic Rows --> </div> </div> <div class="form-group"> <label for="attacks-notes">Additional Attack Notes</label> <textarea id="attacks-notes" name="attacks_notes" rows="2"></textarea> </div> </section>
+                <section class="card items-inventory"> <div class="card-header dynamic-list-header"> <h2>Items & Equipment</h2> <button type="button" id="add-item-button" class="action-button add-button" title="Add Item"><i class="fas fa-plus"></i></button> </div> <div class="dynamic-list-table"> <div class="dynamic-list-header-row item-header-row"> <span>Name</span> <span class="count-col" style="text-align: left;">Count</span> <span class="notes-col">Notes / Weight</span> <span class="action-col"></span> </div> <div id="items-list-content" class="dynamic-list-content"> <!-- Dynamic Rows --> </div> </div> <div class="equipment-details grid-2-col"> <div class="coins-area"> <h4>Coins</h4> <div class="coins-grid"> <div class="coin-input-group"> <label for="cp">CP</label> <input type="number" id="cp" name="cp" value="0" min="0"></div> <div class="coin-input-group"> <label for="sp">SP</label> <input type="number" id="sp" name="sp" value="0" min="0"></div> <div class="coin-input-group"> <label for="ep">EP</label> <input type="number" id="ep" name="ep" value="0" min="0"></div> <div class="coin-input-group"> <label for="gp">GP</label> <input type="number" id="gp" name="gp" value="0" min="0"></div> <div class="coin-input-group"> <label for="pp">PP</label> <input type="number" id="pp" name="pp" value="0" min="0"></div> </div> </div> <div class="attunement-area"> <h4>Magic Item Attunement</h4> <div class="attunement-slots"> <input type="text" name="attunement_1" placeholder="Attuned Item 1"> <input type="text" name="attunement_2" placeholder="Attuned Item 2"> <input type="text" name="attunement_3" placeholder="Attuned Item 3"> </div> </div> </div> <div class="form-group"> <label for="equipment-notes">General Equipment Notes</label> <textarea id="equipment-notes" name="equipment" rows="3"></textarea> </div> </section>
+                <section class="card features-traits"> <h2 class="card-header">Features & Traits</h2> <div class="textarea-grid"> <div class="form-group"> <label for="class-features">Class Features</label> <textarea id="class-features" name="class_features" rows="8"></textarea> </div> <div class="form-group"> <label for="species-traits">Species Traits</label> <textarea id="species-traits" name="species_traits" rows="8"></textarea> </div> <div class="form-group"> <label for="feats">Feats</label> <textarea id="feats" name="feats" rows="8"></textarea> </div> </div> </section>
+            </div>
+        </div>
+    </form>
+
+    <script src="script-modern.js"></script>
+    <footer style="text-align: center;"> Modern DND Character Sheet by Anurag S., Vibe Coded W/ Google Gemini </footer>
+</body>
+
+</html>

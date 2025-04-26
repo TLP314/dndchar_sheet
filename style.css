@@ -164,7 +164,7 @@ body[data-theme="dark"] .list-item { border-color: var(--border-color); }
 /* Proficiencies */
 .proficiencies h4 { text-align: left; margin-bottom: 8px; }
 .prof-group { margin-bottom: 10px; }
-.checkbox-group { display: flex; flex-wrap: wrap; gap: 5px 15px; }
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 5px 9px; }
 .checkbox-group div { display: flex; align-items: center; }
 .checkbox-group label { font-weight: 400; text-transform: none; margin-bottom: 0; }
 

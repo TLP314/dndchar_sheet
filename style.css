@@ -40,7 +40,7 @@ body[data-theme="dark"] {
     --icon-color: var(--label-color);
     --hp-bar-bg: #4a5568;       /* V6.8 HP Bar */
     --hp-bar-current: var(--success-color);
-    --hp-bar-temp: #718096;
+    --hp-bar-temp: #3b8bff;
 }
 
 /* --- Global Styles --- */

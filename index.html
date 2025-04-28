@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- VERSION BUMP -->
-    <title>Modern D&D 5e Character Sheet V6.7 Anurag S.</title>
+    <title>Modern D&D 5e Character Sheet V6.8 Anurag S.</title> <!-- V6.8 Bump -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -99,7 +99,8 @@
                          </div>
                     </div>
                     <div class="card-content">
-                        <div class="grid-4-col-auto centered-labels">
+                        <!-- V6.8 Use grid-5-col-auto to fit concentration better -->
+                        <div class="grid-5-col-auto centered-labels">
                              <div class="stat-block"> <label>Proficiency Bonus</label> <div class="calculated-field main-calc centered-text" id="proficiency-bonus" title="Calculated: Based on Level">+2</div> </div>
                              <div class="stat-block"> <label>Passive Perception</label> <div class="calculated-field main-calc centered-text" id="passive-perception" title="Calculated: 10 + Perception Skill Bonus">10</div> </div>
                              <div class="stat-block"> <label for="size">Size</label> <input type="text" id="size" name="size" value="Medium" class="main-stat-input centered-text" title="Character Size"> </div>
@@ -161,8 +162,6 @@
                     </div>
                 </section>
 
-                
-
                 <section class="card proficiencies">
                      <div class="card-header collapse-optional">
                         <h2><i class="fas fa-tools icon-inline"></i> Proficiencies & Languages</h2>
@@ -222,7 +221,6 @@
                                 <div class="resource-values">
                                     <input type="number" id="bardic-inspiration-current" name="bardic_inspiration_current" class="resource-current centered-text" value="0" min="0" title="Current">
                                     <span class="resource-separator">/</span>
-                                    <!-- V6.7 CHANGED type to number, added class resource-max -->
                                     <input type="number" id="bardic-inspiration-max" name="bardic_inspiration_max" class="resource-max centered-text" value="1" readonly title="Maximum (CHA Mod, Min 1)">
                                 </div>
                             </div>
@@ -247,7 +245,6 @@
                                 <div class="resource-values">
                                     <input type="number" id="ki-current" name="ki_current" class="resource-current centered-text" value="0" min="0" title="Current">
                                     <span class="resource-separator">/</span>
-                                     <!-- V6.7 CHANGED type to number, added class resource-max -->
                                     <input type="number" id="ki-max" name="ki_max" class="resource-max centered-text" value="1" readonly title="Maximum (Equal to Monk Level)">
                                 </div>
                             </div>
@@ -256,7 +253,6 @@
                                 <div class="resource-values">
                                     <input type="number" id="sorcery-points-current" name="sorcery_points_current" class="resource-current centered-text" value="0" min="0" title="Current">
                                     <span class="resource-separator">/</span>
-                                     <!-- V6.7 CHANGED type to number, added class resource-max -->
                                     <input type="number" id="sorcery-points-max" name="sorcery_points_max" class="resource-max centered-text" value="1" readonly title="Maximum (Equal to Sorcerer Level)">
                                 </div>
                             </div>
@@ -268,6 +264,8 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- === Combat Section V6.8 - Updated Initiative & HP Bar === -->
                 <section class="card combat-stats">
                     <div class="card-header collapse-optional">
                         <h2><i class="fas fa-fist-raised icon-inline"></i> Combat</h2>
@@ -276,11 +274,15 @@
                          </div>
                     </div>
                     <div class="card-content">
-                        <div class="grid-3-col centered-labels">
+                         <!-- V6.8: Adjusted grid for AC, Initiative (Value + Bonus), Speed -->
+                        <div class="combat-grid centered-labels">
                              <div class="stat-block"> <label for="ac">Armor Class</label> <input type="number" class="main-stat-input centered-text" id="ac" name="ac" value="10" title="Armor Class"> </div>
-                             <div class="stat-block"> <label>Initiative</label> <div class="calculated-field main-calc centered-text" id="initiative" title="Calculated: Dexterity Modifier">+0</div> </div>
+                             <div class="stat-block"> <label>Initiative</label> <div class="calculated-field main-calc centered-text" id="initiative" title="Calculated: Dexterity Mod + Bonus">+0</div> </div>
+                             <!-- V6.8: Initiative Bonus Input -->
+                             <div class="stat-block"> <label for="initiative-bonus-input">Initiative Bonus</label> <input type="number" class="main-stat-input centered-text" id="initiative-bonus-input" name="initiative_bonus" value="0" title="Initiative Bonus (e.g., from Alert feat)"> </div>
                              <div class="stat-block"> <label for="speed-base">Speed</label> <input type="text" class="main-stat-input centered-text" id="speed-base" name="speed_base" value="30ft" title="Base walking speed"> </div>
                         </div>
+                        <!-- V6.8: HP Section with Bar -->
                         <div class="hp-section">
                              <h4><i class="fas fa-heart icon-inline"></i> Hit Points</h4>
                              <div class="hp-grid centered-labels">
@@ -289,7 +291,13 @@
                                 <div class="form-group"> <label for="hp-temp">Temporary</label> <input type="number" id="hp-temp" name="hp_temp" value="0" min="0" title="Temporary Hit Points" class="centered-text"> </div>
                                 <div class="form-group"> <label>Total</label> <div id="hp-total-display" class="calculated-field hp-total centered-text" title="Total Effective HP (Current + Temp)">10</div> </div>
                             </div>
+                             <!-- V6.8: HP Bar Structure -->
+                             <div id="hp-bar-container" title="HP Status (Green=Current, Grey=Temporary)">
+                                 <div id="hp-bar-current"></div>
+                                 <div id="hp-bar-temp"></div>
+                             </div>
                         </div>
+                         <!-- V6.8: HD/DS Section remains the same -->
                         <div class="hd-ds-section">
                             <div class="hit-dice-area">
                                 <h4><i class="fas fa-dice-d8 icon-inline"></i> Hit Dice</h4>
@@ -327,7 +335,7 @@
                             <h4><i class="fas fa-book-sparkles icon-inline"></i> Spell Slots</h4>
                             <div class="spell-slots-grid-modern">
                                 <!-- JS generates slots here -->
-                                <script> /* v6.7 - No change to script block */ const modernSpellSlotsGridV67 = document.querySelector('.spell-slots-grid-modern'); if (modernSpellSlotsGridV67) { for (let i = 1; i <= 9; i++) { modernSpellSlotsGridV67.innerHTML += `<div class="spell-slot-level-modern" id="modern-spell-slots-level-${i}" data-level="${i}"><label class="slot-level-label-modern">Lvl ${i}</label><div class="slot-total-modern"><label for="modern-slots-total-${i}" class="sr-only">Total Slots Lvl ${i}</label><input type="number" id="modern-slots-total-${i}" name="slots_total_${i}" class="slot-total-input centered-text" value="0" min="0" max="6" title="Total Level ${i} Slots (Max 6)"><span class="slot-total-label">Total</span></div><div class="slot-visual-modern" id="modern-slot-visual-${i}" title="Click to mark Level ${i} slots as used"></div></div>`; } } else { console.error("Could not find '.spell-slots-grid-modern' container (v6.7)"); } </script>
+                                <script> /* v6.7 - No change to script block (v6.8 uses same structure) */ const modernSpellSlotsGridV67 = document.querySelector('.spell-slots-grid-modern'); if (modernSpellSlotsGridV67) { for (let i = 1; i <= 9; i++) { modernSpellSlotsGridV67.innerHTML += `<div class="spell-slot-level-modern" id="modern-spell-slots-level-${i}" data-level="${i}"><label class="slot-level-label-modern">Lvl ${i}</label><div class="slot-total-modern"><label for="modern-slots-total-${i}" class="sr-only">Total Slots Lvl ${i}</label><input type="number" id="modern-slots-total-${i}" name="slots_total_${i}" class="slot-total-input centered-text" value="0" min="0" max="6" title="Total Level ${i} Slots (Max 6)"><span class="slot-total-label">Total</span></div><div class="slot-visual-modern" id="modern-slot-visual-${i}" title="Click to mark Level ${i} slots as used"></div></div>`; } } else { console.error("Could not find '.spell-slots-grid-modern' container (v6.8)"); } </script>
                             </div>
                         </div>
                         <div class="spells-list-area">
@@ -408,7 +416,7 @@
         </div> <!-- End sheet-layout -->
     </form>
 
-    <footer class="sheet-footer"> Modern DND Character Sheet V6.7 by Anurag S., Vibe Coded with Google Gemini </footer>
+    <footer class="sheet-footer"> Modern DND Character Sheet V6.8 by Anurag S., Enhanced with Google Gemini </footer> <!-- V6.8 Bump -->
     <div id="sheet-message-container"></div>
     <script src="script-modern.js"></script>
 </body>

@@ -1,4 +1,4 @@
-// Modern D&D Character Sheet Script V6.7 (Corrected)
+// Modern D&D Character Sheet Script V6.8 (Corrected + Features) // V6.8 Bump
 document.addEventListener('DOMContentLoaded', () => {
     // --- Core Selectors ---
     const form = document.getElementById('character-sheet-modern');
@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const hpTempInput = document.getElementById('hp-temp');
     const hpTotalDisplay = document.getElementById('hp-total-display');
     const hitDiceSpentInput = document.getElementById('hd-spent');
+    const initiativeBonusInput = document.getElementById('initiative-bonus-input'); // V6.8 Initiative Bonus
+    const initiativeDisplay = document.getElementById('initiative'); // V6.8 Initiative Display
 
     // --- Header Control Selectors (ADDED/VERIFIED) ---
     const saveButton = document.getElementById('save-button');
@@ -43,6 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Spell Slot Selectors ---
     const spellSlotsGrid = document.querySelector('.spell-slots-grid-modern');
+
+    // --- V6.8 HP Bar Selectors ---
+    const hpBarCurrent = document.getElementById('hp-bar-current');
+    const hpBarTemp = document.getElementById('hp-bar-temp');
 
     // --- Counters ---
     let spellIndexCounter = 0;
@@ -123,11 +129,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ppDisplay) ppDisplay.textContent = passivePerception;
     }
 
+    // V6.8 Initiative Update
     function updateInitiative(modifiers) {
         const dexModifier = modifiers['dex'] || 0;
-        const totalInitiative = dexModifier;
-        const initDisplay = document.getElementById('initiative');
-         if (initDisplay) initDisplay.textContent = formatModifier(totalInitiative);
+        const initiativeBonus = parseInt(initiativeBonusInput?.value, 10) || 0; // Get bonus from input
+        const totalInitiative = dexModifier + initiativeBonus; // Add bonus to calculation
+         if (initiativeDisplay) initiativeDisplay.textContent = formatModifier(totalInitiative);
     }
 
     function updateSpellcastingStats(modifiers, pb) {
@@ -153,7 +160,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const current = parseInt(hpCurrentInput?.value, 10) || 0;
         const temp = parseInt(hpTempInput?.value, 10) || 0;
         if (hpTotalDisplay) hpTotalDisplay.textContent = current + temp;
+        updateHpBar(); // V6.8 Call HP Bar update here
     }
+
+    // --- V6.8: HP Bar Update Function ---
+    function updateHpBar() {
+        if (!hpBarCurrent || !hpBarTemp || !hpMaxInput || !hpCurrentInput || !hpTempInput) return;
+
+        const maxHp = Math.max(1, parseInt(hpMaxInput.value, 10) || 1); // Ensure maxHp is at least 1 to avoid division by zero
+        const currentHp = parseInt(hpCurrentInput.value, 10) || 0;
+        const tempHp = parseInt(hpTempInput.value, 10) || 0;
+
+        // Calculate percentages, clamping between 0 and 100
+        let currentPercent = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
+        let tempPercent = Math.max(0, Math.min(100, (tempHp / maxHp) * 100));
+
+        // Set widths and positions
+        hpBarCurrent.style.width = `${currentPercent}%`;
+        hpBarTemp.style.left = `${currentPercent}%`;
+        // The temporary bar's width shouldn't make the total exceed 100%
+        hpBarTemp.style.width = `${Math.min(tempPercent, 100 - currentPercent)}%`;
+    }
+
 
     // --- Master Update Function ---
     function updateAllCalculatedFields() {
@@ -161,14 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const modifiers = updateAbilityScoresAndModifiers(); // Calls updateClassResourceMaxes internally
         updateSavingThrows(modifiers, pb);
         updateSkills(modifiers, pb); // Calls updatePassivePerception internally
-        updateInitiative(modifiers);
+        updateInitiative(modifiers); // Now includes bonus
         updateSpellcastingStats(modifiers, pb);
-        updateTotalHpDisplay();
+        updateTotalHpDisplay(); // Now includes HP bar update
         // One final call ensures everything is consistent, especially if mods/level were updated elsewhere
         updateClassResourceMaxes(levelInput?.value || 1, modifiers);
     }
 
-    // --- Dynamic List Management V6.7 ---
+    // --- Dynamic List Management V6.7 --- (No changes in V6.8 for these functions)
     function createSpellRow(index, spellData = {}) {
         const row = document.createElement('div');
         row.classList.add('dynamic-list-row', 'spell-row');
@@ -194,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="text" class="spell-input spell-notes notes-col" name="spell_notes_${index}" placeholder="Range, Duration, Details..." value="${spellData.notes || ''}" title="Spell Notes/Details">
             <button type="button" class="action-button remove-button remove-spell-row-button action-col" title="Remove Spell"><i class="fas fa-trash-alt"></i></button>
         `;
-        // Add listener to new remove button immediately (less efficient than delegation, but simpler here)
          const removeButton = row.querySelector('.remove-spell-row-button');
          removeButton?.addEventListener('click', () => row.remove());
         return row;
@@ -277,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Event Listener for Removing Dynamic Rows (Replaced with direct binding for simplicity) ---
     // The previous delegated listener is removed; buttons now get listeners when created.
 
-    // --- Spell Slot Management ---
+    // --- Spell Slot Management --- (No changes in V6.8)
     function generateSpellSlotsVisuals(level, total) {
         const visualContainer = document.getElementById(`modern-slot-visual-${level}`);
         if (!visualContainer) return;
@@ -307,11 +334,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let total = parseInt(inputElement.value, 10);
         if (isNaN(total) || total < 0) { total = 0; }
         if (total > 6) { total = 6; inputElement.value = 6; } // Ensure value is capped
-        // inputElement.value = total; // No need to set again if capped
         generateSpellSlotsVisuals(level, total);
     }
 
-    // --- Class, Multiclass & Resource Management (V6.7 - Updated Max/Readonly logic) ---
+    // --- Class, Multiclass & Resource Management (V6.7 - Updated Max/Readonly logic) --- (No changes in V6.8)
     const classResourceMap = {
         "Barbarian": ["rage-tracker"],
         "Bard": ["bardic-inspiration-tracker"],
@@ -333,11 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceTrackersContainer?.querySelectorAll('.class-resource').forEach(el => el.style.display = 'none');
 
         if (isMulticlass) {
-             // Show *all* class resources if multiclass is selected
-             // This requires manual management by the user, but prevents hiding needed trackers
              resourceTrackersContainer?.querySelectorAll('.class-resource').forEach(el => el.style.display = ''); // Show all
         } else {
-            // Show only resources for the selected single class
             resourcesToShow.forEach(trackerId => {
                 const trackerElement = document.getElementById(trackerId);
                 if (trackerElement) trackerElement.style.display = ''; // Use default display (flex)
@@ -353,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateClassResourceMaxes(currentLevel = null, currentModifiers = null) {
         const level = parseInt(currentLevel ?? levelInput?.value, 10) || 1;
-        // Ensure modifiers are fetched if not provided (needed for CHA mod etc.)
         const modifiers = currentModifiers ?? (() => { const mods = {}; form.querySelectorAll('.ability-box').forEach(box => { const scoreInput = box.querySelector('.ability-score'); if (scoreInput) mods[box.id.split('-')[0]] = calculateModifier(scoreInput.value); }); return mods; })();
         const fullClassLevelText = (multiclassInputGroup?.style.display !== 'none' && multiclassInput?.value) ? multiclassInput.value.toLowerCase() : "";
         const selectedSingleClass = (classSelect?.value !== 'Other' && classSelect?.value) ? classSelect.value.toLowerCase() : null;
@@ -362,10 +384,10 @@ document.addEventListener('DOMContentLoaded', () => {
              if (fullClassLevelText) {
                  const match = fullClassLevelText.match(new RegExp(className.toLowerCase() + '\\s*(\\d+)'));
                  if (match?.[1]) return parseInt(match[1], 10);
-                 return 0; // Not found in multiclass string
+                 return 0;
              }
-             if (selectedSingleClass === className.toLowerCase()) { return level; } // Matches the single class selected
-             return 0; // Not the selected single class
+             if (selectedSingleClass === className.toLowerCase()) { return level; }
+             return 0;
         };
 
         // Rage (Barbarian)
@@ -379,68 +401,59 @@ document.addEventListener('DOMContentLoaded', () => {
              else if (barbarianLevel >= 6) maxRages = 4;
              else if (barbarianLevel >= 3) maxRages = 3;
              else if (barbarianLevel >= 1) maxRages = 2;
-            rageMaxInput.value = (maxRages === Infinity) ? '∞' : maxRages.toString(); // Store as string if Infinity
-            rageMaxInput.type = (maxRages === Infinity) ? 'text' : 'number'; // Change type dynamically
+            rageMaxInput.value = (maxRages === Infinity) ? '∞' : maxRages.toString();
+            rageMaxInput.type = (maxRages === Infinity) ? 'text' : 'number';
         }
 
-        // Bardic Inspiration (Bard) - Max based on CHA Mod
+        // Bardic Inspiration (Bard)
         const bardicMaxInput = document.getElementById('bardic-inspiration-max');
         if (bardicMaxInput) {
             const chaMod = modifiers['cha'] ?? 0;
-            bardicMaxInput.value = Math.max(1, chaMod); // Ensure at least 1
-            bardicMaxInput.readOnly = true; // Make readonly as it's calculated
+            bardicMaxInput.value = Math.max(1, chaMod);
+            bardicMaxInput.readOnly = true;
         }
 
-        // Channel Divinity (Cleric/Paladin) - Max based on class levels
+        // Channel Divinity (Cleric/Paladin)
         const channelDivinityMaxInput = document.getElementById('channel-divinity-max');
          if (channelDivinityMaxInput) {
              const clericLevel = getClassLevel('cleric');
              const paladinLevel = getClassLevel('paladin');
              let maxCD = 0;
-             // Check Cleric levels first
              if (clericLevel >= 18) maxCD = 3;
              else if (clericLevel >= 6) maxCD = 2;
              else if (clericLevel >= 2) maxCD = 1;
-             // Add Paladin uses (they don't stack uses, just gain access at level 3, potentially more later)
-             // Basic PHB Paladin Channel Divinity uses are typically 1 per short/long rest. Some subclasses might grant more.
-             // This logic assumes standard PHB rules where Paladin gets 1 use at level 3. If a cleric/paladin multiclass exists, the cleric levels primarily determine the # of uses.
-             if (paladinLevel >= 3 && maxCD === 0) { // Only give Paladin's 1 use if they aren't getting uses from Cleric
+             if (paladinLevel >= 3 && maxCD === 0) {
                  maxCD = 1;
              }
-             // Note: Complex multiclass interactions (like Paladin 6/Cleric 6) might need specific interpretation.
-             // This calculation primarily follows the higher progression (Cleric).
              channelDivinityMaxInput.value = maxCD;
-             // Max value is calculated, but might be overridden manually for specific builds/items
-             // channelDivinityMaxInput.readOnly = false; // Allow manual override if needed
         }
 
-        // Wild Shape (Druid) - Max based on Druid Level (Standard PHB = 2 uses at level 2)
+        // Wild Shape (Druid)
         const wildShapeMaxInput = document.getElementById('wild-shape-max');
         if (wildShapeMaxInput) {
             const druidLevel = getClassLevel('druid');
             wildShapeMaxInput.value = (druidLevel >= 2) ? 2 : 0;
-             // wildShapeMaxInput.readOnly = false; // Allow manual override (e.g., Moon Druid changes)
         }
 
-        // Ki Points (Monk) - Max equals Monk Level
+        // Ki Points (Monk)
         const kiMaxInput = document.getElementById('ki-max');
         if (kiMaxInput) {
             const monkLevel = getClassLevel('monk');
-            kiMaxInput.value = Math.max(0, monkLevel); // Monk level can be 0 if not a monk
-            kiMaxInput.readOnly = true; // Strictly based on level
+            kiMaxInput.value = Math.max(0, monkLevel);
+            kiMaxInput.readOnly = true;
         }
 
-        // Sorcery Points (Sorcerer) - Max equals Sorcerer Level
+        // Sorcery Points (Sorcerer)
         const sorcPointsMaxInput = document.getElementById('sorcery-points-max');
         if (sorcPointsMaxInput) {
             const sorcLevel = getClassLevel('sorcerer');
-             sorcPointsMaxInput.value = Math.max(0, sorcLevel); // Sorc level can be 0
-             sorcPointsMaxInput.readOnly = true; // Strictly based on level
+             sorcPointsMaxInput.value = Math.max(0, sorcLevel);
+             sorcPointsMaxInput.readOnly = true;
         }
     }
 
 
-    // --- Long Rest Functionality (V6.7 - Check Max Type) ---
+    // --- Long Rest Functionality (V6.7 - Check Max Type) --- (No changes in V6.8)
     function executeLongRest() {
         if (!window.confirm("Are you sure you want to take a Long Rest? This will reset HP, spell slots, spent Hit Dice, and certain resources to their maximums.")) return;
 
@@ -459,38 +472,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset Class Resources (that reset on Long Rest)
         const longRestResources = [
-             "rage-tracker",            // Barbarian Rage
-             "bardic-inspiration-tracker", // Bardic Inspiration (Most regain on Long, some on Short at higher levels)
-             "channel-divinity-tracker", // Cleric/Paladin Channel Divinity (Typically regain on Short/Long)
-             "wild-shape-tracker",       // Druid Wild Shape (Regain on Short/Long)
-             "ki-tracker",             // Monk Ki (Regain on Short/Long)
-             "sorcery-points-tracker",  // Sorcerer Points (Regain on Long)
-             // Note: Warlock slots reset on Short Rest, so not included here.
-             // Add other class resources if they reset on Long Rest
+             "rage-tracker", "bardic-inspiration-tracker", "channel-divinity-tracker",
+             "wild-shape-tracker", "ki-tracker", "sorcery-points-tracker",
         ];
 
         longRestResources.forEach(trackerId => {
             const tracker = document.getElementById(trackerId);
-            // Only reset if the tracker is currently visible (relevant for single class)
-            // For multiclass, we might reset resources even if the primary class doesn't use them.
-            // Let's reset regardless of visibility, assuming the user added the resource intentionally.
             if (tracker) {
                 const currentInput = tracker.querySelector('.resource-current');
-                const maxInput = tracker.querySelector('.resource-max'); // Handles both number and text inputs
-
+                const maxInput = tracker.querySelector('.resource-max');
                 if (currentInput && maxInput) {
-                    // Handle the '∞' case for Rage
                     if (maxInput.type === 'text' && maxInput.value === '∞') {
-                        // Set to a high number or simply keep current if already high? Let's set to max possible value for the number input type
-                        currentInput.value = currentInput.max || 99; // Or just leave it if ∞? Let's reset to max numeric allowed
+                        currentInput.value = currentInput.max || 99;
                     } else {
-                        currentInput.value = maxInput.value; // Set current to the max value
+                        currentInput.value = maxInput.value;
                     }
                 }
             }
         });
 
-        // Reset Manual Resources - Assuming they ALL reset on long rest. Could add a checkbox per resource later.
+        // Reset Manual Resources
         manualResourcesList?.querySelectorAll('.manual-resource-row').forEach(row => {
              const currentInput = row.querySelector('.manual-resource-current');
              const maxInput = row.querySelector('.manual-resource-max');
@@ -499,12 +500,12 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        // Update calculated HP total display
+        // Update calculated HP total display (also triggers HP bar update)
         updateTotalHpDisplay();
         showTemporaryMessage("Long Rest Complete!", "success");
     }
 
-    // --- Collapsible Sections ---
+    // --- Collapsible Sections --- (No changes in V6.8)
     function toggleCollapse(event) {
         const button = event.currentTarget;
         const card = button.closest('.card');
@@ -520,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Dark Mode Logic ---
+    // --- Dark Mode Logic --- (No changes in V6.8)
     function applyTheme(theme) {
         bodyElement.dataset.theme = theme;
         localStorage.setItem('dndSheetTheme', theme);
@@ -535,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(newTheme);
     }
 
-    // --- Utility: Temporary Message Display ---
+    // --- Utility: Temporary Message Display --- (No changes in V6.8)
     function showTemporaryMessage(message, type = 'info') {
         if (!messageContainer) return;
         const messageDiv = document.createElement('div');
@@ -555,10 +556,11 @@ document.addEventListener('DOMContentLoaded', () => {
         form.querySelectorAll('.ability-score').forEach(input => input.addEventListener('input', updateAllCalculatedFields));
         form.querySelectorAll('.prof-toggle').forEach(toggle => toggle.addEventListener('change', updateAllCalculatedFields));
         spellcastingAbilitySelect?.addEventListener('change', updateAllCalculatedFields);
-        hpCurrentInput?.addEventListener('input', updateTotalHpDisplay);
-        hpTempInput?.addEventListener('input', updateTotalHpDisplay);
-        hpMaxInput?.addEventListener('input', updateTotalHpDisplay); // Max HP changes affect current if current > new max? (Rule dependent, currently doesn't enforce)
-        multiclassInput?.addEventListener('input', () => updateClassResourceMaxes(levelInput?.value, null)); // Update resources on multiclass text change
+        hpCurrentInput?.addEventListener('input', updateTotalHpDisplay); // updateTotalHpDisplay calls updateHpBar
+        hpTempInput?.addEventListener('input', updateTotalHpDisplay);    // updateTotalHpDisplay calls updateHpBar
+        hpMaxInput?.addEventListener('input', updateTotalHpDisplay);     // updateTotalHpDisplay calls updateHpBar
+        initiativeBonusInput?.addEventListener('input', updateAllCalculatedFields); // V6.8 Initiative Bonus listener
+        multiclassInput?.addEventListener('input', () => updateClassResourceMaxes(levelInput?.value, null));
 
         // Dynamic List Add Buttons
         addSpellButton?.addEventListener('click', addSpellRowHandler);
@@ -572,47 +574,42 @@ document.addEventListener('DOMContentLoaded', () => {
         // Class Selection Change
         classSelect?.addEventListener('change', () => {
             updateMulticlassInputVisibility();
-            updateClassResourceVisibility(); // Show/hide relevant trackers
-            updateClassResourceMaxes(levelInput?.value, null); // Recalculate maxes for the new class/multiclass state
+            updateClassResourceVisibility();
+            updateClassResourceMaxes(levelInput?.value, null);
         });
 
         // UI Buttons
         allCollapseToggles?.forEach(button => button.addEventListener('click', toggleCollapse));
         darkModeToggle?.addEventListener('click', toggleTheme);
         longRestButton?.addEventListener('click', executeLongRest);
-        saveButton?.addEventListener('click', saveData); // Now wired up correctly
-        loadFileLabel?.addEventListener('click', () => loadFileInput?.click()); // Trigger hidden file input
-        loadFileInput?.addEventListener('change', loadData); // Handle file selection
-        printButton?.addEventListener('click', () => window.print()); // Simple print trigger
+        saveButton?.addEventListener('click', saveData);
+        loadFileLabel?.addEventListener('click', () => loadFileInput?.click());
+        loadFileInput?.addEventListener('change', loadData);
+        printButton?.addEventListener('click', () => window.print());
     }
 
-    // --- Save/Load Functionality (V6.7 - Consistent Naming, JSON structure) ---
+    // --- Save/Load Functionality (V6.8 - Include initiative bonus) ---
     function saveData() {
         const characterData = {};
         const excludedContainers = ['#spell-list-content', '#weapons-list-content', '#items-list-content', '#manual-resources-list', '.slot-visual-modern'];
-        const excludedIds = ['hp-total-display', 'load-file']; // Exclude calculated/utility IDs
+        const excludedIds = ['hp-total-display', 'load-file'];
 
         // Save standard form fields
         form.querySelectorAll('input:not([type=file]):not([type=checkbox]), textarea, select').forEach(input => {
-            // Skip inputs within dynamic list containers or specifically excluded IDs
             if (excludedContainers.some(selector => input.closest(selector)) || excludedIds.includes(input.id)) return;
-            // Skip the multiclass input if it's hidden
             if (input.id === 'classlevel' && multiclassInputGroup?.style.display === 'none') return;
-
             const key = input.name || input.id;
             if (key) { characterData[key] = input.value; }
         });
 
         // Save checkboxes separately
         form.querySelectorAll('input[type=checkbox]').forEach(input => {
-             // Skip checkboxes within dynamic list containers (handled below) or spell slot visuals
             if (excludedContainers.some(selector => input.closest(selector)) || input.closest('.slot-visual-modern')) return;
             const key = input.name || input.id;
             if (key) { characterData[key] = input.checked; }
         });
 
-
-        // Save Spell Slots (Total and Used)
+        // Save Spell Slots
         characterData.spellSlots = {};
         spellSlotsGrid?.querySelectorAll('.spell-slot-level-modern').forEach(slotLevelDiv => {
             const level = slotLevelDiv.dataset.level;
@@ -621,22 +618,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (totalInput && level) {
                 characterData.spellSlots[`level${level}`] = {
                     total: totalInput.value || '0',
-                    used: Array.from(usedCheckboxes).map(cb => cb.dataset.index) // Store indices of used slots
+                    used: Array.from(usedCheckboxes).map(cb => cb.dataset.index)
                 };
             }
         });
 
         // Save Dynamic Lists
-        characterData.spells = Array.from(spellListContent?.querySelectorAll('.spell-row') || []).map((row, index) => {
-            // Find elements using more specific selectors within the row
+        characterData.spells = Array.from(spellListContent?.querySelectorAll('.spell-row') || []).map((row) => {
+            const index = row.id.split('-').pop();
             return {
-                prepared: row.querySelector(`input[name="spell_prepared_${row.id.split('-').pop()}"]`)?.checked || false,
-                level: row.querySelector(`input[name="spell_level_${row.id.split('-').pop()}"]`)?.value || '',
-                name: row.querySelector(`input[name="spell_name_${row.id.split('-').pop()}"]`)?.value || '',
-                compV: row.querySelector(`input[name="spell_comp_v_${row.id.split('-').pop()}"]`)?.checked || false,
-                compS: row.querySelector(`input[name="spell_comp_s_${row.id.split('-').pop()}"]`)?.checked || false,
-                compM: row.querySelector(`input[name="spell_comp_m_${row.id.split('-').pop()}"]`)?.checked || false,
-                notes: row.querySelector(`input[name="spell_notes_${row.id.split('-').pop()}"]`)?.value || ''
+                prepared: row.querySelector(`input[name="spell_prepared_${index}"]`)?.checked || false,
+                level: row.querySelector(`input[name="spell_level_${index}"]`)?.value || '',
+                name: row.querySelector(`input[name="spell_name_${index}"]`)?.value || '',
+                compV: row.querySelector(`input[name="spell_comp_v_${index}"]`)?.checked || false,
+                compS: row.querySelector(`input[name="spell_comp_s_${index}"]`)?.checked || false,
+                compM: row.querySelector(`input[name="spell_comp_m_${index}"]`)?.checked || false,
+                notes: row.querySelector(`input[name="spell_notes_${index}"]`)?.value || ''
             };
         });
         characterData.weapons = Array.from(weaponsListContent?.querySelectorAll('.attack-row') || []).map(row => ({
@@ -648,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
         characterData.items = Array.from(itemsListContent?.querySelectorAll('.item-row') || []).map(row => ({
             equipped: row.querySelector('input[name^="item_equipped"]')?.checked || false,
             name: row.querySelector('input[name^="item_name"]')?.value || '',
-            count: row.querySelector('input[name^="item_count"]')?.value || '1', // Default count to 1 if empty
+            count: row.querySelector('input[name^="item_count"]')?.value || '1',
             notes: row.querySelector('input[name^="item_notes"]')?.value || ''
         }));
         characterData.manualResources = Array.from(manualResourcesList?.querySelectorAll('.manual-resource-row') || []).map(row => ({
@@ -658,19 +655,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }));
 
         // Create and Download JSON File
-        const jsonData = JSON.stringify(characterData, null, 2); // Pretty print JSON
+        const jsonData = JSON.stringify(characterData, null, 2);
         const blob = new Blob([jsonData], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         const charName = document.getElementById('charname')?.value || 'modern_character';
-        // Use V6.7 in filename
-        const fileName = `${charName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_dnd_sheet_v6.7.json`;
+        // Use V6.8 in filename
+        const fileName = `${charName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_dnd_sheet_v6.8.json`; // V6.8 Bump
         a.href = url;
         a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url); // Clean up blob URL
+        URL.revokeObjectURL(url);
         showTemporaryMessage("Character Saved!", "success");
     }
 
@@ -683,74 +680,60 @@ document.addEventListener('DOMContentLoaded', () => {
                  const characterData = JSON.parse(e.target.result);
 
                  // --- PRE-LOAD PREPARATION ---
-                 // Clear dynamic lists & reset counters FIRST
                  if (spellListContent) spellListContent.innerHTML = '';
                  if (weaponsListContent) weaponsListContent.innerHTML = '';
                  if (itemsListContent) itemsListContent.innerHTML = '';
                  if (manualResourcesList) manualResourcesList.innerHTML = '';
                  spellIndexCounter = 0; weaponIndexCounter = 0; itemIndexCounter = 0; manualResourceIndexCounter = 0;
-                 // Clear existing spell slot visuals before loading new totals
                  spellSlotsGrid?.querySelectorAll('.slot-visual-modern').forEach(vis => vis.innerHTML = '');
 
-
                  // --- LOAD DATA ---
-                 // Load standard inputs (text, textarea, select, number)
                  form.querySelectorAll('input:not([type=file]):not([type=checkbox]), textarea, select').forEach(input => {
                      const key = input.name || input.id;
-                     // Skip inputs that should not be loaded directly (dynamic lists, calculated, file input, spell totals)
                      if (!key || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list') || ['hp-total-display', 'load-file'].includes(key) || input.classList.contains('slot-total-input')) return;
                      if (characterData.hasOwnProperty(key)) {
                           input.value = characterData[key];
-                     } else {
-                         // Optional: Clear fields not found in saved data? Or leave them as default?
-                         // input.value = ''; // Uncomment to clear fields not in JSON
                      }
                  });
 
-                 // Load checkboxes (must be done separately)
-                  form.querySelectorAll('input[type=checkbox]').forEach(input => {
+                 form.querySelectorAll('input[type=checkbox]').forEach(input => {
                      const key = input.name || input.id;
-                      // Skip checkboxes inside dynamic lists or spell slot visuals (handled later)
                      if (!key || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list, .slot-visual-modern')) return;
                       if (characterData.hasOwnProperty(key)) {
                           input.checked = characterData[key];
-                     } else {
-                         // input.checked = false; // Uncomment to uncheck boxes not in JSON
                      }
                  });
 
                  // --- POST-LOAD PROCESSING for specific elements ---
-                 updateMulticlassInputVisibility(); // Update visibility based on loaded classSelect value
+                 updateMulticlassInputVisibility();
 
-                 // Load Dynamic Lists by creating new rows
+                 // Load Dynamic Lists
                  characterData.spells?.forEach(data => { if (spellListContent) spellListContent.appendChild(createSpellRow(spellIndexCounter++, data)); });
                  characterData.weapons?.forEach(data => { if (weaponsListContent) weaponsListContent.appendChild(createWeaponRow(weaponIndexCounter++, data)); });
                  characterData.items?.forEach(data => { if (itemsListContent) itemsListContent.appendChild(createItemRow(itemIndexCounter++, data)); });
                  characterData.manualResources?.forEach(data => { if (manualResourcesList) manualResourcesList.appendChild(createManualResourceRow(manualResourceIndexCounter++, data)); });
 
-                 // Load Spell Slots (Set totals, generate visuals, check used boxes)
+                 // Load Spell Slots
                  if (characterData.spellSlots && spellSlotsGrid) {
                      for (let level = 1; level <= 9; level++) {
                          const slotData = characterData.spellSlots[`level${level}`];
                          const totalInput = document.getElementById(`modern-slots-total-${level}`);
                          if (slotData && totalInput) {
                              let loadedTotal = parseInt(slotData.total, 10) || 0;
-                             loadedTotal = Math.min(Math.max(loadedTotal, 0), 6); // Clamp between 0 and 6
+                             loadedTotal = Math.min(Math.max(loadedTotal, 0), 6);
                              totalInput.value = loadedTotal;
-                             generateSpellSlotsVisuals(level, loadedTotal); // Generate visuals based on loaded total
+                             generateSpellSlotsVisuals(level, loadedTotal);
 
-                             // Check the 'used' checkboxes based on loaded data
                              if (slotData.used && Array.isArray(slotData.used)) {
                                  slotData.used.forEach(usedIndexStr => {
                                      const usedIndex = parseInt(usedIndexStr, 10);
-                                     if (!isNaN(usedIndex) && usedIndex > 0 && usedIndex <= loadedTotal) { // Validate index
+                                     if (!isNaN(usedIndex) && usedIndex > 0 && usedIndex <= loadedTotal) {
                                          const checkbox = document.getElementById(`modern_slot_lvl${level}_used_${usedIndex}`);
                                          if (checkbox) checkbox.checked = true;
                                      }
                                  });
                              }
                          } else if (totalInput) {
-                             // If no data for this level, reset it
                              totalInput.value = '0';
                              generateSpellSlotsVisuals(level, 0);
                          }
@@ -758,56 +741,53 @@ document.addEventListener('DOMContentLoaded', () => {
                  }
 
                  // --- FINAL UPDATES ---
-                 updateClassResourceVisibility(); // Ensure correct resources are shown based on loaded class
-                 updateAllCalculatedFields(); // Recalculate everything based on loaded data
-                 applyTheme(localStorage.getItem('dndSheetTheme') || 'light'); // Re-apply theme
+                 updateClassResourceVisibility();
+                 updateAllCalculatedFields(); // Recalculate everything, including HP bar and initiative
+                 applyTheme(localStorage.getItem('dndSheetTheme') || 'light');
                  showTemporaryMessage('Character data loaded successfully!', 'success');
 
              } catch (error) {
                  console.error("Error loading or parsing file:", error);
                  showTemporaryMessage('Error loading character data. File might be corrupt or invalid.', 'error');
              } finally {
-                 // Clear the file input value so the 'change' event fires even if the same file is selected again
                  if (loadFileInput) loadFileInput.value = '';
              }
          };
          reader.onerror = () => {
             showTemporaryMessage('Error reading file.', 'error');
-            if (loadFileInput) loadFileInput.value = ''; // Clear input on read error too
+            if (loadFileInput) loadFileInput.value = '';
         };
          reader.readAsText(file);
     }
 
     // --- Initial Setup ---
     function initializeSheet() {
-        // Add one empty row to each dynamic list if they start empty (provides a starting point)
+        // Add default rows if lists are empty
         function initializeDefaultRowsIfEmpty(container, addHandler) {
-             if (container && !container.querySelector(':scope > *')) { // Check if container has direct children
+             if (container && !container.querySelector(':scope > *')) {
                  addHandler();
              }
         }
         initializeDefaultRowsIfEmpty(spellListContent, addSpellRowHandler);
         initializeDefaultRowsIfEmpty(weaponsListContent, addWeaponRowHandler);
         initializeDefaultRowsIfEmpty(itemsListContent, addItemRowHandler);
-        // Don't add a default manual resource unless requested
 
-        // Apply saved theme or default based on system preference
         const savedTheme = localStorage.getItem('dndSheetTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
 
         // Initial UI state updates
         updateMulticlassInputVisibility();
         updateClassResourceVisibility();
-        updateAllCalculatedFields(); // Initial calculation of all fields
+        updateAllCalculatedFields(); // Initial calculation (includes HP bar & initiative)
 
-        // Generate initial spell slot visuals based on default values (likely 0)
+        // Generate initial spell slot visuals
         for (let i = 1; i <= 9; i++) {
             const totalInput = document.getElementById(`modern-slots-total-${i}`);
             if (totalInput) generateSpellSlotsVisuals(i, totalInput.value || 0);
         }
 
-        setupEventListeners(); // Setup all event listeners AFTER initial setup
-        console.log("Modern D&D Sheet V6.7 Initialized");
+        setupEventListeners();
+        console.log("Modern D&D Sheet V6.8 Initialized"); // V6.8 Bump
     }
 
     // --- Run Initialization ---

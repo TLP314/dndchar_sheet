@@ -1,4 +1,4 @@
-/* === MODERN D&D SHEET STYLES V6.7 === */
+/* === MODERN D&D SHEET STYLES V6.8 === */ /* V6.8 Bump */
 
 /* --- Imports & Variables --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -19,6 +19,9 @@
     --border-radius: 6px;
     --header-bg: var(--card-bg);
     --icon-color: var(--label-color);
+    --hp-bar-bg: #e2e8f0;       /* V6.8 HP Bar */
+    --hp-bar-current: var(--success-color);
+    --hp-bar-temp: #a0aec0;
 }
 
 body[data-theme="dark"] {
@@ -35,6 +38,9 @@ body[data-theme="dark"] {
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
     --header-bg: var(--card-bg);
     --icon-color: var(--label-color);
+    --hp-bar-bg: #4a5568;       /* V6.8 HP Bar */
+    --hp-bar-current: var(--success-color);
+    --hp-bar-temp: #718096;
 }
 
 /* --- Global Styles --- */
@@ -126,6 +132,12 @@ body[data-theme="dark"] #dark-mode-toggle:hover { background-color: #e2e8f0; }
 .grid-2-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px 20px; }
 .grid-3-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; }
 .grid-4-col-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 15px; align-items: center; }
+.grid-5-col-auto { /* V6.8: For core stats + concentration */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* Adjust minmax */
+    gap: 10px;
+    align-items: center;
+}
 
 /* --- Form Groups --- */
 .form-group { margin-bottom: 10px; }
@@ -133,13 +145,13 @@ body[data-theme="dark"] #dark-mode-toggle:hover { background-color: #e2e8f0; }
 
 /* --- Specific Sections --- */
 
-/* Core Stats V6.7 Centering */
-.core-stats .stat-block { display: flex; flex-direction: column; align-items: center; justify-content: space-between; /* Better vertical distribution */ min-height: 55px; /* Ensure consistent height */ }
-.core-stats .stat-block label { font-size: 0.8em; margin-bottom: 5px; text-align: center; } /* Ensure label is centered */
-.core-stats .main-stat-input, .core-stats .calculated-field { width: 80%; /* Control width slightly */ margin-top: auto; /* Push content towards bottom if space */ }
-.inspiration-block, .concentration-block { justify-content: center; /* Center checkbox group */ }
-.inspiration-block label, .concentration-block label { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 0;} /* Stack icon/text */
-.inspiration-check, .concentration-check { width: 20px; height: 20px; margin: 0; /* Reset margin */ cursor: pointer; }
+/* Core Stats V6.8 - Adjust grid for concentration */
+.core-stats .stat-block { display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 55px; }
+.core-stats .stat-block label { font-size: 0.8em; margin-bottom: 5px; text-align: center; }
+.core-stats .main-stat-input, .core-stats .calculated-field { width: 80%; margin-top: auto; }
+.inspiration-block, .concentration-block { justify-content: center; }
+.inspiration-block label, .concentration-block label { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 0;}
+.inspiration-check, .concentration-check { width: 20px; height: 20px; margin: 0; cursor: pointer; }
 .concentration-block { border-left: 2px solid var(--border-color-light); padding-left: 10px; margin-left: 5px; }
 
 
@@ -164,19 +176,12 @@ body[data-theme="dark"] .list-item { border-color: var(--border-color-light); }
 .resource-max-detail { font-size: 0.8em; color: var(--label-color); font-weight: 400; }
 .resource-values { display: flex; align-items: center; gap: 5px; }
 .resource-values input[type="number"].resource-current,
-.resource-values input[type="number"].resource-max { /* Style current AND max number inputs */
+.resource-values input[type="number"].resource-max {
     width: 55px; padding: 4px 6px; font-size: 0.9em; height: 30px; text-align: center; }
-/* Ensure readonly number inputs look the same */
 .resource-values input[type="number"].resource-max[readonly] {
-    background-color: var(--input-bg); /* Match normal input bg */
-    color: var(--text-color-light); /* Dim text slightly */
-    cursor: default; /* Indicate non-editable */
-    border: 1px solid var(--input-border-color); /* Ensure border */
-}
-/* Keep styling for Rage's text input variant */
+    background-color: var(--input-bg); color: var(--text-color-light); cursor: default; border: 1px solid var(--input-border-color); }
 .resource-values input[type="text"].resource-max {
      width: 55px; padding: 4px 6px; font-size: 0.9em; height: 30px; text-align: center; }
-
 .resource-separator { font-weight: 600; color: var(--text-color-light); }
 .resource-divider { border: none; border-top: 1px dashed var(--border-color); margin: 10px 0; }
 .manual-resources-area { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
@@ -192,14 +197,65 @@ body[data-theme="dark"] .list-item { border-color: var(--border-color-light); }
 .checkbox-group div { display: flex; align-items: center; }
 .checkbox-group label { font-weight: 400; text-transform: none; margin-bottom: 0; }
 
-/* Combat Stats */
+/* Combat Stats V6.8 - Initiative Grid & HP Bar */
+.combat-stats .combat-grid { /* V6.8: Changed grid class name */
+    display: grid;
+    /* Adjust to 4 columns to fit initiative bonus */
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px; /* Space before HP section */
+}
 .combat-stats .centered-labels .stat-block { display: flex; flex-direction: column; align-items: center; }
 .combat-stats .stat-block label { font-size: 0.8em; margin-bottom: 4px; }
 .main-stat-input { font-size: 1.3em; font-weight: 600; padding: 8px; }
-.hp-section, .hd-ds-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color-light); }
-.hp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; align-items: end; }
+.hp-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color-light);
+}
+.hp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; align-items: end; margin-bottom: 10px; /* V6.8 Space before bar */ }
 .hp-total { padding: 8px 10px !important; }
-.hd-ds-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 20px; }
+
+/* V6.8: HP Bar Styles */
+#hp-bar-container {
+    width: 100%;
+    height: 15px; /* Adjust height as needed */
+    background-color: var(--hp-bar-bg);
+    border-radius: var(--border-radius);
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px; /* Space after inputs */
+    border: 1px solid var(--border-color-light);
+}
+#hp-bar-current {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--hp-bar-current);
+    width: 0%; /* Set by JS */
+    transition: width 0.3s ease-in-out;
+    z-index: 2; /* Ensure current HP is potentially above temp if overlapping completely */
+}
+#hp-bar-temp {
+    position: absolute;
+    top: 0;
+    left: 0%; /* Set by JS based on current HP % */
+    height: 100%;
+    background-color: var(--hp-bar-temp);
+    width: 0%; /* Set by JS */
+    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+    z-index: 1;
+}
+
+.hd-ds-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color-light);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 20px;
+}
 .hd-inputs { display: flex; gap: 10px; align-items: center; }
 .hd-inputs input { flex-grow: 1; }
 .ds-checks { display: flex; justify-content: space-around; text-align: center; }
@@ -295,6 +351,7 @@ body[data-theme="dark"] .list-item { border-color: var(--border-color-light); }
 @media print {
     body[data-theme="dark"] { /* Force light mode for print */
        --text-color: #2d3748; --text-color-light: #4a5568; --label-color: #718096; --bg-color: #ffffff; --card-bg: #ffffff; --border-color: #ccc; --border-color-light: #ddd; --input-border-color: #ccc; --input-bg: #fff; --accent-color: #3182ce; --calculated-bg: #eee; --calculated-border: #ccc; --calculated-value-bg: #fff; --calculated-value-border: #ccc; --header-bg: #fff; --icon-color: #718096;
+       --hp-bar-bg: #eee; --hp-bar-current: #38a169; --hp-bar-temp: #aaa; /* V6.8 Print HP Bar Colors */
     }
     body { background-color: #fff; font-size: 9pt; padding-bottom: 0; }
     .sheet-header, .action-button, .collapse-toggle, #add-manual-resource-button, .card-header-actions, #sheet-message-container, .dynamic-list-controls .add-button { display: none !important; }
@@ -316,6 +373,7 @@ body[data-theme="dark"] .list-item { border-color: var(--border-color-light); }
     h3 { font-size: 1em; }
     .abilities-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
     .coins-grid { grid-template-columns: repeat(5, 1fr) !important; }
+    #hp-bar-container { display: none !important; } /* V6.8: Hide visual HP bar on print */
     .slot-visual-modern input[type="checkbox"] { border: 1px solid #888 !important; border-radius: 0 !important; opacity: 1 !important; }
     .slot-visual-modern input[type="checkbox"]:checked { background-color: #555 !important; border-color: #555 !important; }
     .dynamic-list-row:hover { background-color: transparent !important; }

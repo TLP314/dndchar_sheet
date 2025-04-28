@@ -174,8 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const visualMaxHp = Math.max(maxHp, currentHp + tempHp, 1);
 
         // Calculate percentages, clamping between 0 and 100
-        let currentPercent = Math.max(0, Math.min(100, ((currentHp - tempHP) / maxHp) * 100));
-        let tempPercent = Math.max(0, Math.min(100, (tempHp / maxHp) * 100));
+        let currentPercent = Math.max(0, Math.min(100, (currentHp / visualMaxHp) * 100));
+        let tempPercent = Math.max(0, Math.min(100, (tempHp / visalMaxHp) * 100));
 
         // Set widths and positions
         hpBarCurrent.style.width = `${currentPercent}%`;

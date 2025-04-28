@@ -21,7 +21,7 @@
     --icon-color: var(--label-color);
     --hp-bar-bg: #e2e8f0;       /* V6.8 HP Bar */
     --hp-bar-current: var(--success-color);
-    --hp-bar-temp: #a0aec0;
+    --hp-bar-temp: #3b8bff;
 }
 
 body[data-theme="dark"] {

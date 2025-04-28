@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hpBarCurrent.style.width = `${currentPercent}%`;
         hpBarTemp.style.left = `${currentPercent}%`;
         // The temporary bar's width shouldn't make the total exceed 100%
-        //hpBarTemp.style.width = `${Math.min(tempPercent, 100 - currentPercent)}%`;
+        hpBarTemp.style.width = `${Math.min(tempPercent, 100 - currentPercent)}%`;
     }
 
 

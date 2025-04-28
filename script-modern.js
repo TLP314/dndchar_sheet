@@ -171,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentHp = parseInt(hpCurrentInput.value, 10) || 0;
         const tempHp = parseInt(hpTempInput.value, 10) || 0;
 
+        const visualMaxHp = Math.max(maxHp, currentHp + tempHp, 1);
+
         // Calculate percentages, clamping between 0 and 100
         let currentPercent = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
         let tempPercent = Math.max(0, Math.min(100, (tempHp / maxHp) * 100));
@@ -179,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hpBarCurrent.style.width = `${currentPercent}%`;
         hpBarTemp.style.left = `${currentPercent}%`;
         // The temporary bar's width shouldn't make the total exceed 100%
-        hpBarTemp.style.width = `${Math.min(tempPercent, 100 - currentPercent)}%`;
+        //hpBarTemp.style.width = `${Math.min(tempPercent, 100 - currentPercent)}%`;
     }
 
 

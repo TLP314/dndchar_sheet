@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- VERSION BUMP -->
-    <title>Modern D&D 5e Character Sheet V6.8 Anurag S.</title> <!-- V6.8 Bump -->
+    <title>Modern D&D 5e Character Sheet V6.9 Anurag S.</title> <!-- V6.9 Bump -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -114,53 +114,84 @@
                 </section>
 
                 <section class="card abilities">
-                     <div class="card-header collapse-optional">
-                         <h2><i class="fas fa-tasks icon-inline"></i> Abilities & Skills</h2>
-                         <div class="card-header-actions">
-                             <button type="button" class="collapse-toggle" title="Toggle Section"><i class="fas fa-chevron-up"></i></button>
-                         </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="abilities-grid">
-                            <!-- Strength -->
-                            <div class="ability-box" id="str-box">
-                                <h3><i class="fas fa-dumbbell icon-inline"></i> Strength</h3>
-                                <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="str-score" name="str_score" value="10" min="1" max="30" title="Strength Score"> <div class="ability-mod calculated-value centered-text" id="str-mod" title="Strength Modifier">+0</div> </div>
-                                <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="str-save-prof" name="str_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="str-save-value" title="Save Bonus">+0</span> <label for="str-save-prof">Saving Throw</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="athletics-prof" name="athletics_prof" data-ability="str" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="athletics-value" title="Skill Bonus">+0</span> <label for="athletics-prof">Athletics</label> </div> </div>
-                            </div>
-                            <!-- Dexterity -->
-                            <div class="ability-box" id="dex-box">
-                                <h3><i class="fas fa-person-running icon-inline"></i> Dexterity</h3>
-                                <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="dex-score" name="dex_score" value="10" min="1" max="30" title="Dexterity Score"> <div class="ability-mod calculated-value centered-text" id="dex-mod" title="Dexterity Modifier">+0</div> </div>
-                                <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="dex-save-prof" name="dex_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="dex-save-value" title="Save Bonus">+0</span> <label for="dex-save-prof">Saving Throw</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="acrobatics-prof" name="acrobatics_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="acrobatics-value" title="Skill Bonus">+0</span> <label for="acrobatics-prof">Acrobatics</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="sleight-of-hand-prof" name="sleight_of_hand_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="sleight-of-hand-value" title="Skill Bonus">+0</span> <label for="sleight-of-hand-prof">Sleight of Hand</label> </div> <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="stealth-prof" name="stealth_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="stealth-value" title="Skill Bonus">+0</span> <label for="stealth-prof">Stealth</label> </div> </div>
-                            </div>
-                            <!-- Constitution -->
-                            <div class="ability-box" id="con-box">
-                                <h3><i class="fas fa-heart-pulse icon-inline"></i> Constitution</h3>
-                                <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="con-score" name="con_score" value="10" min="1" max="30" title="Constitution Score"> <div class="ability-mod calculated-value centered-text" id="con-mod" title="Constitution Modifier">+0</div> </div>
-                                <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="con-save-prof" name="con_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="con-save-value" title="Save Bonus">+0</span> <label for="con-save-prof">Saving Throw</label> </div> </div>
-                            </div>
-                            <!-- Intelligence -->
-                            <div class="ability-box" id="int-box">
-                                <h3><i class="fas fa-book-open icon-inline"></i> Intelligence</h3>
-                                <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="int-score" name="int_score" value="10" min="1" max="30" title="Intelligence Score"> <div class="ability-mod calculated-value centered-text" id="int-mod" title="Intelligence Modifier">+0</div> </div>
-                                <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="int-save-prof" name="int_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="int-save-value" title="Save Bonus">+0</span> <label for="int-save-prof">Saving Throw</label> </div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="arcana-prof" name="arcana_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="arcana-value" title="Skill Bonus">+0</span><label for="arcana-prof">Arcana</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="history-prof" name="history_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="history-value" title="Skill Bonus">+0</span><label for="history-prof">History</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="investigation-prof" name="investigation_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="investigation-value" title="Skill Bonus">+0</span><label for="investigation-prof">Investigation</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="nature-prof" name="nature_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="nature-value" title="Skill Bonus">+0</span><label for="nature-prof">Nature</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="religion-prof" name="religion_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="religion-value" title="Skill Bonus">+0</span><label for="religion-prof">Religion</label></div> </div>
-                            </div>
-                            <!-- Wisdom -->
-                             <div class="ability-box" id="wis-box">
-                                 <h3><i class="fas fa-leaf icon-inline"></i> Wisdom</h3>
-                                 <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="wis-score" name="wis_score" value="10" min="1" max="30" title="Wisdom Score"> <div class="ability-mod calculated-value centered-text" id="wis-mod" title="Wisdom Modifier">+0</div> </div>
-                                 <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="wis-save-prof" name="wis_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="wis-save-value" title="Save Bonus">+0</span> <label for="wis-save-prof">Saving Throw</label> </div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="animal-handling-prof" name="animal_handling_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="animal-handling-value" title="Skill Bonus">+0</span><label for="animal-handling-prof">Animal Handling</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="insight-prof" name="insight_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="insight-value" title="Skill Bonus">+0</span><label for="insight-prof">Insight</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="medicine-prof" name="medicine_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="medicine-value" title="Skill Bonus">+0</span><label for="medicine-prof">Medicine</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="perception-prof" name="perception_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="perception-value" title="Skill Bonus">+0</span><label for="perception-prof">Perception</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="survival-prof" name="survival_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="survival-value" title="Skill Bonus">+0</span><label for="survival-prof">Survival</label></div> </div>
-                            </div>
-                            <!-- Charisma -->
-                            <div class="ability-box" id="cha-box">
-                                 <h3><i class="fas fa-comments icon-inline"></i> Charisma</h3>
-                                 <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="cha-score" name="cha_score" value="10" min="1" max="30" title="Charisma Score"> <div class="ability-mod calculated-value centered-text" id="cha-mod" title="Charisma Modifier">+0</div> </div>
-                                 <div class="saves-skills-list"> <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="cha-save-prof" name="cha_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="cha-save-value" title="Save Bonus">+0</span> <label for="cha-save-prof">Saving Throw</label> </div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="deception-prof" name="deception_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="deception-value" title="Skill Bonus">+0</span><label for="deception-prof">Deception</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="intimidation-prof" name="intimidation_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="intimidation-value" title="Skill Bonus">+0</span><label for="intimidation-prof">Intimidation</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="performance-prof" name="performance_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="performance-value" title="Skill Bonus">+0</span><label for="performance-prof">Performance</label></div> <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="persuasion-prof" name="persuasion_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="persuasion-value" title="Skill Bonus">+0</span><label for="persuasion-prof">Persuasion</label></div> </div>
-                            </div>
+                    <div class="card-header collapse-optional">
+                        <h2><i class="fas fa-tasks icon-inline"></i> Abilities & Skills</h2>
+                        <div class="card-header-actions">
+                            <button type="button" class="collapse-toggle" title="Toggle Section"><i class="fas fa-chevron-up"></i></button>
                         </div>
-                    </div>
-                </section>
+                   </div>
+                   <div class="card-content">
+                       <div class="abilities-grid">
+                           <!-- Strength -->
+                           <div class="ability-box" id="str-box">
+                               <h3><i class="fas fa-dumbbell icon-inline"></i> Strength</h3>
+                               <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="str-score" name="str_score" value="10" min="1" max="30" title="Strength Score"> <div class="ability-mod calculated-value centered-text" id="str-mod" title="Strength Modifier">+0</div> </div>
+                               <div class="saves-skills-list">
+                                   <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="str-save-prof" name="str_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="str-save-value" title="Save Bonus">+0</span> <label for="str-save-prof">Saving Throw</label> </div>
+                                   <!-- Original Skill Checkbox -->
+                                   <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="athletics-prof" name="athletics_prof" data-ability="str" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="athletics-value" title="Skill Bonus">+0</span> <label for="athletics-prof">Athletics</label> </div>
+                               </div>
+                           </div>
+                           <!-- Dexterity -->
+                           <div class="ability-box" id="dex-box">
+                               <h3><i class="fas fa-person-running icon-inline"></i> Dexterity</h3>
+                               <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="dex-score" name="dex_score" value="10" min="1" max="30" title="Dexterity Score"> <div class="ability-mod calculated-value centered-text" id="dex-mod" title="Dexterity Modifier">+0</div> </div>
+                               <div class="saves-skills-list">
+                                   <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="dex-save-prof" name="dex_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="dex-save-value" title="Save Bonus">+0</span> <label for="dex-save-prof">Saving Throw</label> </div>
+                                   <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="acrobatics-prof" name="acrobatics_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="acrobatics-value" title="Skill Bonus">+0</span> <label for="acrobatics-prof">Acrobatics</label> </div>
+                                   <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="sleight-of-hand-prof" name="sleight_of_hand_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="sleight-of-hand-value" title="Skill Bonus">+0</span> <label for="sleight-of-hand-prof">Sleight of Hand</label> </div>
+                                   <div class="skill list-item"> <input type="checkbox" class="prof-toggle skill-prof" id="stealth-prof" name="stealth_prof" data-ability="dex" title="Proficient?"> <span class="calculated-value skill-value centered-text" id="stealth-value" title="Skill Bonus">+0</span> <label for="stealth-prof">Stealth</label> </div>
+                               </div>
+                           </div>
+                           <!-- Constitution -->
+                           <div class="ability-box" id="con-box">
+                               <h3><i class="fas fa-heart-pulse icon-inline"></i> Constitution</h3>
+                               <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="con-score" name="con_score" value="10" min="1" max="30" title="Constitution Score"> <div class="ability-mod calculated-value centered-text" id="con-mod" title="Constitution Modifier">+0</div> </div>
+                               <div class="saves-skills-list">
+                                   <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="con-save-prof" name="con_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="con-save-value" title="Save Bonus">+0</span> <label for="con-save-prof">Saving Throw</label> </div>
+                               </div>
+                           </div>
+                           <!-- Intelligence -->
+                           <div class="ability-box" id="int-box">
+                               <h3><i class="fas fa-book-open icon-inline"></i> Intelligence</h3>
+                               <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="int-score" name="int_score" value="10" min="1" max="30" title="Intelligence Score"> <div class="ability-mod calculated-value centered-text" id="int-mod" title="Intelligence Modifier">+0</div> </div>
+                               <div class="saves-skills-list">
+                                   <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="int-save-prof" name="int_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="int-save-value" title="Save Bonus">+0</span> <label for="int-save-prof">Saving Throw</label> </div>
+                                   <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="arcana-prof" name="arcana_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="arcana-value" title="Skill Bonus">+0</span><label for="arcana-prof">Arcana</label></div>
+                                   <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="history-prof" name="history_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="history-value" title="Skill Bonus">+0</span><label for="history-prof">History</label></div>
+                                   <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="investigation-prof" name="investigation_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="investigation-value" title="Skill Bonus">+0</span><label for="investigation-prof">Investigation</label></div>
+                                   <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="nature-prof" name="nature_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="nature-value" title="Skill Bonus">+0</span><label for="nature-prof">Nature</label></div>
+                                   <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="religion-prof" name="religion_prof" data-ability="int" title="Proficient?"><span class="calculated-value skill-value centered-text" id="religion-value" title="Skill Bonus">+0</span><label for="religion-prof">Religion</label></div>
+                               </div>
+                           </div>
+                           <!-- Wisdom -->
+                            <div class="ability-box" id="wis-box">
+                                <h3><i class="fas fa-leaf icon-inline"></i> Wisdom</h3>
+                                <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="wis-score" name="wis_score" value="10" min="1" max="30" title="Wisdom Score"> <div class="ability-mod calculated-value centered-text" id="wis-mod" title="Wisdom Modifier">+0</div> </div>
+                                <div class="saves-skills-list">
+                                    <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="wis-save-prof" name="wis_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="wis-save-value" title="Save Bonus">+0</span> <label for="wis-save-prof">Saving Throw</label> </div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="animal-handling-prof" name="animal_handling_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="animal-handling-value" title="Skill Bonus">+0</span><label for="animal-handling-prof">Animal Handling</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="insight-prof" name="insight_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="insight-value" title="Skill Bonus">+0</span><label for="insight-prof">Insight</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="medicine-prof" name="medicine_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="medicine-value" title="Skill Bonus">+0</span><label for="medicine-prof">Medicine</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="perception-prof" name="perception_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="perception-value" title="Skill Bonus">+0</span><label for="perception-prof">Perception</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="survival-prof" name="survival_prof" data-ability="wis" title="Proficient?"><span class="calculated-value skill-value centered-text" id="survival-value" title="Skill Bonus">+0</span><label for="survival-prof">Survival</label></div>
+                                </div>
+                           </div>
+                           <!-- Charisma -->
+                           <div class="ability-box" id="cha-box">
+                                <h3><i class="fas fa-comments icon-inline"></i> Charisma</h3>
+                                <div class="score-mod-group"> <input type="number" class="ability-score centered-text" id="cha-score" name="cha_score" value="10" min="1" max="30" title="Charisma Score"> <div class="ability-mod calculated-value centered-text" id="cha-mod" title="Charisma Modifier">+0</div> </div>
+                                <div class="saves-skills-list">
+                                    <div class="saving-throw list-item"> <input type="checkbox" class="prof-toggle save-prof" id="cha-save-prof" name="cha_save_prof" title="Proficient?"> <span class="calculated-value save-value centered-text" id="cha-save-value" title="Save Bonus">+0</span> <label for="cha-save-prof">Saving Throw</label> </div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="deception-prof" name="deception_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="deception-value" title="Skill Bonus">+0</span><label for="deception-prof">Deception</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="intimidation-prof" name="intimidation_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="intimidation-value" title="Skill Bonus">+0</span><label for="intimidation-prof">Intimidation</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="performance-prof" name="performance_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="performance-value" title="Skill Bonus">+0</span><label for="performance-prof">Performance</label></div>
+                                    <div class="skill list-item"><input type="checkbox" class="prof-toggle skill-prof" id="persuasion-prof" name="persuasion_prof" data-ability="cha" title="Proficient?"><span class="calculated-value skill-value centered-text" id="persuasion-value" title="Skill Bonus">+0</span><label for="persuasion-prof">Persuasion</label></div>
+                                </div>
+                           </div>
+                       </div>
+                   </div>
+               </section>
 
                 <section class="card proficiencies">
                      <div class="card-header collapse-optional">
@@ -335,12 +366,17 @@
                             <h4><i class="fas fa-book-sparkles icon-inline"></i> Spell Slots</h4>
                             <div class="spell-slots-grid-modern">
                                 <!-- JS generates slots here -->
-                                <script> /* v6.7 - No change to script block (v6.8 uses same structure) */ const modernSpellSlotsGridV67 = document.querySelector('.spell-slots-grid-modern'); if (modernSpellSlotsGridV67) { for (let i = 1; i <= 9; i++) { modernSpellSlotsGridV67.innerHTML += `<div class="spell-slot-level-modern" id="modern-spell-slots-level-${i}" data-level="${i}"><label class="slot-level-label-modern">Lvl ${i}</label><div class="slot-total-modern"><label for="modern-slots-total-${i}" class="sr-only">Total Slots Lvl ${i}</label><input type="number" id="modern-slots-total-${i}" name="slots_total_${i}" class="slot-total-input centered-text" value="0" min="0" max="6" title="Total Level ${i} Slots (Max 6)"><span class="slot-total-label">Total</span></div><div class="slot-visual-modern" id="modern-slot-visual-${i}" title="Click to mark Level ${i} slots as used"></div></div>`; } } else { console.error("Could not find '.spell-slots-grid-modern' container (v6.8)"); } </script>
+                                <script> /* v6.9 - No change to script block */ const modernSpellSlotsGridV69 = document.querySelector('.spell-slots-grid-modern'); if (modernSpellSlotsGridV69) { for (let i = 1; i <= 9; i++) { modernSpellSlotsGridV69.innerHTML += `<div class="spell-slot-level-modern" id="modern-spell-slots-level-${i}" data-level="${i}"><label class="slot-level-label-modern">Lvl ${i}</label><div class="slot-total-modern"><label for="modern-slots-total-${i}" class="sr-only">Total Slots Lvl ${i}</label><input type="number" id="modern-slots-total-${i}" name="slots_total_${i}" class="slot-total-input centered-text" value="0" min="0" max="6" title="Total Level ${i} Slots (Max 6)"><span class="slot-total-label">Total</span></div><div class="slot-visual-modern" id="modern-slot-visual-${i}" title="Click to mark Level ${i} slots as used"></div></div>`; } } else { console.error("Could not find '.spell-slots-grid-modern' container (v6.9)"); } </script>
                             </div>
                         </div>
                         <div class="spells-list-area">
                             <div class="dynamic-list-controls">
                                 <h4><i class="fas fa-wand-sparkles icon-inline"></i> Cantrips & Spells</h4>
+                                <!-- V6.9: Added Sort Buttons -->
+                                <div class="spell-sort-buttons" style="margin-left: auto; margin-right: 10px; display: flex; gap: 5px;">
+                                     <button type="button" id="sort-spells-level" class="action-button" title="Sort by Level (then Name)"><i class="fas fa-sort-numeric-down"></i> Sort Lvl</button>
+                                     <button type="button" id="sort-spells-name" class="action-button" title="Sort by Name"><i class="fas fa-sort-alpha-down"></i> Sort Name</button>
+                                </div>
                                 <button type="button" id="add-spell-button" class="action-button add-button" title="Add Spell"><i class="fas fa-plus"></i> Add Spell</button>
                             </div>
                             <div class="dynamic-list-table spell-table">
@@ -416,7 +452,7 @@
         </div> <!-- End sheet-layout -->
     </form>
 
-    <footer class="sheet-footer"> Modern DND Character Sheet V6.8 by Anurag S., Enhanced with Google Gemini </footer> <!-- V6.8 Bump -->
+    <footer class="sheet-footer"> Modern DND Character Sheet V6.9 by Anurag S., Enhanced with Google Gemini </footer> <!-- V6.9 Bump -->
     <div id="sheet-message-container"></div>
     <script src="script-modern.js"></script>
 </body>

@@ -1,4 +1,4 @@
-// Modern D&D Character Sheet Script V6.8 (Corrected + Features) // V6.8 Bump
+// Modern D&D Character Sheet Script V6.9 (Sorting, Warning - Expertise Reverted) // V6.9 Revert Bump
 document.addEventListener('DOMContentLoaded', () => {
     // --- Core Selectors ---
     const form = document.getElementById('character-sheet-modern');
@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let weaponIndexCounter = 0;
     let itemIndexCounter = 0;
     let manualResourceIndexCounter = 0;
+    let isSheetDirty = false; // V6.9 Unsaved changes flag
 
     // --- Helper Functions ---
     const calculateModifier = (score) => Math.floor(((parseInt(score, 10) || 10) - 10) / 2);
@@ -104,20 +105,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+     // V6.9 REVERTED: Back to V6.8 Skill Calculation (No Expertise)
      function updateSkills(modifiers, pb) {
         let perceptionBonus = 0;
+        // Original V6.8 selection using skill checkbox
         form.querySelectorAll('.skill').forEach(skillDiv => {
-            const checkbox = skillDiv.querySelector('.skill-prof');
+            const checkbox = skillDiv.querySelector('.skill-prof'); // Select the checkbox again
             const valueDisplay = skillDiv.querySelector('.skill-value');
+            // data-ability is on the checkbox in the reverted HTML
             const ability = checkbox?.dataset.ability;
+
             if (checkbox && valueDisplay && ability && modifiers.hasOwnProperty(ability)) {
                 const baseModifier = modifiers[ability];
+                // Original calculation: only add PB if checkbox is checked
                 const totalSkill = baseModifier + (checkbox.checked ? pb : 0);
                 valueDisplay.textContent = formatModifier(totalSkill);
+
                 // Specific logic for Perception to calculate Passive Perception
-                if (checkbox.id === 'perception-prof') {
+                if (checkbox.id === 'perception-prof') { // Use checkbox ID
                     perceptionBonus = totalSkill;
                 }
+            } else if (valueDisplay && ability && modifiers.hasOwnProperty(ability)) {
+                // Fallback if checkbox somehow missing but data exists
+                 valueDisplay.textContent = formatModifier(modifiers[ability]);
             }
         });
         updatePassivePerception(perceptionBonus); // Update passive perception after skills
@@ -190,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pb = updateProficiencyBonus(); // Calls updateClassResourceMaxes internally
         const modifiers = updateAbilityScoresAndModifiers(); // Calls updateClassResourceMaxes internally
         updateSavingThrows(modifiers, pb);
-        updateSkills(modifiers, pb); // Calls updatePassivePerception internally
+        updateSkills(modifiers, pb); // Calls updatePassivePerception internally (V6.9 Reverted to V6.8 logic)
         updateInitiative(modifiers); // Now includes bonus
         updateSpellcastingStats(modifiers, pb);
         updateTotalHpDisplay(); // Now includes HP bar update
@@ -198,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateClassResourceMaxes(levelInput?.value || 1, modifiers);
     }
 
-    // --- Dynamic List Management V6.7 --- (No changes in V6.8 for these functions)
+    // --- Dynamic List Management ---
     function createSpellRow(index, spellData = {}) {
         const row = document.createElement('div');
         row.classList.add('dynamic-list-row', 'spell-row');
@@ -225,7 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="action-button remove-button remove-spell-row-button action-col" title="Remove Spell"><i class="fas fa-trash-alt"></i></button>
         `;
          const removeButton = row.querySelector('.remove-spell-row-button');
-         removeButton?.addEventListener('click', () => row.remove());
+         removeButton?.addEventListener('click', () => {
+             row.remove();
+             markSheetDirty(); // V6.9 Mark dirty on remove
+        });
         return row;
     }
 
@@ -247,7 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="action-button remove-button remove-weapon-row-button action-col" title="Remove Attack"><i class="fas fa-trash-alt"></i></button>
         `;
          const removeButton = row.querySelector('.remove-weapon-row-button');
-         removeButton?.addEventListener('click', () => row.remove());
+         removeButton?.addEventListener('click', () => {
+             row.remove();
+             markSheetDirty(); // V6.9 Mark dirty on remove
+        });
         return row;
     }
 
@@ -269,7 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="action-button remove-button remove-item-row-button action-col" title="Remove Item"><i class="fas fa-trash-alt"></i></button>
         `;
          const removeButton = row.querySelector('.remove-item-row-button');
-         removeButton?.addEventListener('click', () => row.remove());
+         removeButton?.addEventListener('click', () => {
+             row.remove();
+             markSheetDirty(); // V6.9 Mark dirty on remove
+        });
         return row;
     }
 
@@ -281,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createManualResourceRow(index, resourceData = {}) {
         const row = document.createElement('div');
-        row.classList.add('manual-resource-row'); // V6.7 - Used CSS class name
+        row.classList.add('manual-resource-row');
         row.id = `manual-resource-row-${index}`;
         row.innerHTML = `
             <input type="text" class="manual-resource-name" name="manual_resource_name_${index}" value="${resourceData.name || ''}" placeholder="Resource Name (e.g., Luck Points)" title="Custom Resource Name">
@@ -293,7 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="action-button remove-button remove-manual-resource-button action-col" title="Remove Manual Resource"><i class="fas fa-trash-alt"></i></button>
         `;
          const removeButton = row.querySelector('.remove-manual-resource-button');
-         removeButton?.addEventListener('click', () => row.remove());
+         removeButton?.addEventListener('click', () => {
+             row.remove();
+             markSheetDirty(); // V6.9 Mark dirty on remove
+        });
         return row;
     }
 
@@ -303,10 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         manualResourcesList.appendChild(newRow);
     }
 
-    // --- Event Listener for Removing Dynamic Rows (Replaced with direct binding for simplicity) ---
-    // The previous delegated listener is removed; buttons now get listeners when created.
-
-    // --- Spell Slot Management --- (No changes in V6.8)
+    // --- Spell Slot Management ---
     function generateSpellSlotsVisuals(level, total) {
         const visualContainer = document.getElementById(`modern-slot-visual-${level}`);
         if (!visualContainer) return;
@@ -339,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generateSpellSlotsVisuals(level, total);
     }
 
-    // --- Class, Multiclass & Resource Management (V6.7 - Updated Max/Readonly logic) --- (No changes in V6.8)
+    // --- Class, Multiclass & Resource Management ---
     const classResourceMap = {
         "Barbarian": ["rage-tracker"],
         "Bard": ["bardic-inspiration-tracker"],
@@ -403,16 +422,21 @@ document.addEventListener('DOMContentLoaded', () => {
              else if (barbarianLevel >= 6) maxRages = 4;
              else if (barbarianLevel >= 3) maxRages = 3;
              else if (barbarianLevel >= 1) maxRages = 2;
-            rageMaxInput.value = (maxRages === Infinity) ? '∞' : maxRages.toString();
-            rageMaxInput.type = (maxRages === Infinity) ? 'text' : 'number';
+             if (rageMaxInput.value !== (maxRages === Infinity ? '∞' : maxRages.toString())) {
+                 rageMaxInput.value = (maxRages === Infinity) ? '∞' : maxRages.toString();
+                 rageMaxInput.type = (maxRages === Infinity) ? 'text' : 'number';
+             }
         }
 
         // Bardic Inspiration (Bard)
         const bardicMaxInput = document.getElementById('bardic-inspiration-max');
         if (bardicMaxInput) {
             const chaMod = modifiers['cha'] ?? 0;
-            bardicMaxInput.value = Math.max(1, chaMod);
-            bardicMaxInput.readOnly = true;
+            const newMax = Math.max(1, chaMod);
+            if (bardicMaxInput.value != newMax) {
+                 bardicMaxInput.value = newMax;
+                 bardicMaxInput.readOnly = true;
+             }
         }
 
         // Channel Divinity (Cleric/Paladin)
@@ -424,38 +448,49 @@ document.addEventListener('DOMContentLoaded', () => {
              if (clericLevel >= 18) maxCD = 3;
              else if (clericLevel >= 6) maxCD = 2;
              else if (clericLevel >= 2) maxCD = 1;
-             if (paladinLevel >= 3 && maxCD === 0) {
+             if (paladinLevel >= 3 && clericLevel < 2) {
                  maxCD = 1;
              }
-             channelDivinityMaxInput.value = maxCD;
+             if (channelDivinityMaxInput.value != maxCD) {
+                 channelDivinityMaxInput.value = maxCD;
+             }
         }
 
         // Wild Shape (Druid)
         const wildShapeMaxInput = document.getElementById('wild-shape-max');
         if (wildShapeMaxInput) {
             const druidLevel = getClassLevel('druid');
-            wildShapeMaxInput.value = (druidLevel >= 2) ? 2 : 0;
+            const newMax = (druidLevel >= 2) ? 2 : 0;
+             if (wildShapeMaxInput.value != newMax) {
+                 wildShapeMaxInput.value = newMax;
+             }
         }
 
         // Ki Points (Monk)
         const kiMaxInput = document.getElementById('ki-max');
         if (kiMaxInput) {
             const monkLevel = getClassLevel('monk');
-            kiMaxInput.value = Math.max(0, monkLevel);
-            kiMaxInput.readOnly = true;
+            const newMax = Math.max(0, monkLevel);
+            if (kiMaxInput.value != newMax) {
+                kiMaxInput.value = newMax;
+                kiMaxInput.readOnly = true;
+            }
         }
 
         // Sorcery Points (Sorcerer)
         const sorcPointsMaxInput = document.getElementById('sorcery-points-max');
         if (sorcPointsMaxInput) {
             const sorcLevel = getClassLevel('sorcerer');
-             sorcPointsMaxInput.value = Math.max(0, sorcLevel);
-             sorcPointsMaxInput.readOnly = true;
+            const newMax = Math.max(0, sorcLevel);
+             if (sorcPointsMaxInput.value != newMax) {
+                 sorcPointsMaxInput.value = newMax;
+                 sorcPointsMaxInput.readOnly = true;
+            }
         }
     }
 
 
-    // --- Long Rest Functionality (V6.7 - Check Max Type) --- (No changes in V6.8)
+    // --- Long Rest Functionality ---
     function executeLongRest() {
         if (!window.confirm("Are you sure you want to take a Long Rest? This will reset HP, spell slots, spent Hit Dice, and certain resources to their maximums.")) return;
 
@@ -507,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showTemporaryMessage("Long Rest Complete!", "success");
     }
 
-    // --- Collapsible Sections --- (No changes in V6.8)
+    // --- Collapsible Sections ---
     function toggleCollapse(event) {
         const button = event.currentTarget;
         const card = button.closest('.card');
@@ -523,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Dark Mode Logic --- (No changes in V6.8)
+    // --- Dark Mode Logic ---
     function applyTheme(theme) {
         bodyElement.dataset.theme = theme;
         localStorage.setItem('dndSheetTheme', theme);
@@ -538,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(newTheme);
     }
 
-    // --- Utility: Temporary Message Display --- (No changes in V6.8)
+    // --- Utility: Temporary Message Display ---
     function showTemporaryMessage(message, type = 'info') {
         if (!messageContainer) return;
         const messageDiv = document.createElement('div');
@@ -551,30 +586,131 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2500); // Message visible for 2.5 seconds
     }
 
+    // --- V6.9 REVERTED: Proficiency Toggle Logic Removed ---
+    // function setupProficiencyToggleListeners() { ... }
+    // function updateProficiencyToggleVisual(toggleElement) { ... }
+
+    // --- V6.9: Spell Sorting ---
+    const sortSpellsLevelButton = document.getElementById('sort-spells-level');
+    const sortSpellsNameButton = document.getElementById('sort-spells-name');
+
+    function getSpellLevelValue(levelString) {
+        const lowerLevel = (levelString || '0').toLowerCase().trim();
+        if (lowerLevel === 'c' || lowerLevel === '0' || lowerLevel === '') {
+            return 0; // Cantrips are level 0
+        }
+        const num = parseInt(lowerLevel, 10);
+        return isNaN(num) ? 99 : num; // Place invalid numbers last
+    }
+
+    function sortSpells(sortBy) {
+        if (!spellListContent) return;
+        const rows = Array.from(spellListContent.querySelectorAll('.spell-row'));
+        if (rows.length < 2) return; // No need to sort less than 2 items
+
+        rows.sort((a, b) => {
+            const nameA = a.querySelector('input[name^="spell_name"]')?.value.toLowerCase() || '';
+            const nameB = b.querySelector('input[name^="spell_name"]')?.value.toLowerCase() || '';
+            const levelA = getSpellLevelValue(a.querySelector('input[name^="spell_level"]')?.value);
+            const levelB = getSpellLevelValue(b.querySelector('input[name^="spell_level"]')?.value);
+
+            if (sortBy === 'level') {
+                if (levelA !== levelB) {
+                    return levelA - levelB; // Primary sort: Level ascending
+                } else {
+                    return nameA.localeCompare(nameB); // Secondary sort: Name ascending
+                }
+            } else { // sortBy === 'name'
+                return nameA.localeCompare(nameB); // Primary sort: Name ascending
+            }
+        });
+
+        // Clear and re-append sorted rows
+        spellListContent.innerHTML = '';
+        rows.forEach(row => spellListContent.appendChild(row));
+        markSheetDirty(); // Sorting changes the visual order, potentially worth saving
+        showTemporaryMessage(`Spells sorted by ${sortBy === 'level' ? 'Level' : 'Name'}.`, 'info');
+    }
+
+    // --- V6.9: Unsaved Changes Warning ---
+    function setupBeforeUnloadListener() {
+        window.addEventListener('beforeunload', (event) => {
+            if (isSheetDirty) {
+                const confirmationMessage = 'You have unsaved changes. Are you sure you want to leave?';
+                event.preventDefault(); // Standard for most browsers
+                event.returnValue = confirmationMessage; // For older browsers
+                return confirmationMessage; // For some browsers
+            }
+             return undefined; // Allow unload if not dirty
+        });
+    }
+
+    // --- Helper to mark sheet as dirty ---
+    function markSheetDirty() {
+        isSheetDirty = true;
+    }
+
+
     // --- Event Listeners Setup ---
     function setupEventListeners() {
-        // Calculation Triggers
-        levelInput?.addEventListener('input', updateAllCalculatedFields);
-        form.querySelectorAll('.ability-score').forEach(input => input.addEventListener('input', updateAllCalculatedFields));
-        form.querySelectorAll('.prof-toggle').forEach(toggle => toggle.addEventListener('change', updateAllCalculatedFields));
-        spellcastingAbilitySelect?.addEventListener('change', updateAllCalculatedFields);
-        hpCurrentInput?.addEventListener('input', updateTotalHpDisplay); // updateTotalHpDisplay calls updateHpBar
-        hpTempInput?.addEventListener('input', updateTotalHpDisplay);    // updateTotalHpDisplay calls updateHpBar
-        hpMaxInput?.addEventListener('input', updateTotalHpDisplay);     // updateTotalHpDisplay calls updateHpBar
-        initiativeBonusInput?.addEventListener('input', updateAllCalculatedFields); // V6.8 Initiative Bonus listener
-        multiclassInput?.addEventListener('input', () => updateClassResourceMaxes(levelInput?.value, null));
+        // Calculation Triggers (Add dirty flag)
+        levelInput?.addEventListener('input', () => { markSheetDirty(); updateAllCalculatedFields(); });
+        form.querySelectorAll('.ability-score').forEach(input => input.addEventListener('input', () => { markSheetDirty(); updateAllCalculatedFields(); }));
+        // Listen to ALL prof-toggle checkboxes (saves AND skills)
+        form.querySelectorAll('.prof-toggle').forEach(toggle => toggle.addEventListener('change', () => { markSheetDirty(); updateAllCalculatedFields(); }));
+        spellcastingAbilitySelect?.addEventListener('change', () => { markSheetDirty(); updateAllCalculatedFields(); });
+        hpCurrentInput?.addEventListener('input', () => { markSheetDirty(); updateTotalHpDisplay(); });
+        hpTempInput?.addEventListener('input', () => { markSheetDirty(); updateTotalHpDisplay(); });
+        hpMaxInput?.addEventListener('input', () => { markSheetDirty(); updateTotalHpDisplay(); });
+        initiativeBonusInput?.addEventListener('input', () => { markSheetDirty(); updateAllCalculatedFields(); });
+        multiclassInput?.addEventListener('input', () => { markSheetDirty(); updateClassResourceMaxes(levelInput?.value, null); });
 
-        // Dynamic List Add Buttons
-        addSpellButton?.addEventListener('click', addSpellRowHandler);
-        addWeaponButton?.addEventListener('click', addWeaponRowHandler);
-        addItemButton?.addEventListener('click', addItemRowHandler);
-        addManualResourceButton?.addEventListener('click', addManualResourceHandler);
+        // General listener for other inputs/textareas/selects
+        form.addEventListener('input', (event) => {
+             if (event.target.matches('input:not([type=file]):not([type=checkbox]), textarea, select')) {
+                 const isHandledSpecifically = event.target.closest('.ability-score, #level, #hp-current, #hp-temp, #hp-max, #initiative-bonus-input, #classlevel, .slot-total-input');
+                 if (!isHandledSpecifically) {
+                    markSheetDirty();
+                 }
+             }
+        });
+        // General listener for checkboxes/selects
+        form.addEventListener('change', (event) => {
+            if (event.target.matches('input[type=checkbox], select')) {
+                // Exclude elements handled by specific listeners or UI controls
+                const isHandledSpecifically = event.target.closest('.prof-toggle, #spellcasting-ability, .slot-visual-modern input[type="checkbox"]');
+                const isUIControl = event.target.closest('#dark-mode-toggle');
+                if (!isHandledSpecifically && !isUIControl) {
+                    markSheetDirty();
+                }
+            }
+        });
 
-        // Spell Slot Total Input Change
-        spellSlotsGrid?.addEventListener('input', spellSlotTotalChangeHandler);
+        // Dynamic List Add Buttons (Add dirty flag)
+        addSpellButton?.addEventListener('click', () => { markSheetDirty(); addSpellRowHandler(); });
+        addWeaponButton?.addEventListener('click', () => { markSheetDirty(); addWeaponRowHandler(); });
+        addItemButton?.addEventListener('click', () => { markSheetDirty(); addItemRowHandler(); });
+        addManualResourceButton?.addEventListener('click', () => { markSheetDirty(); addManualResourceHandler(); });
 
-        // Class Selection Change
+        // V6.9 Remove button clicks handled in createXXXRow
+
+        // Spell Slot Total Input Change (Add dirty flag)
+        spellSlotsGrid?.addEventListener('input', (event) => {
+            if (event.target.classList.contains('slot-total-input')) {
+                markSheetDirty();
+                spellSlotTotalChangeHandler(event);
+            }
+        });
+        // V6.9 Spell Slot Checkbox Change
+        spellSlotsGrid?.addEventListener('change', (event) => {
+             if (event.target.matches('.slot-visual-modern input[type="checkbox"]')) {
+                markSheetDirty();
+             }
+        });
+
+        // Class Selection Change (Add dirty flag)
         classSelect?.addEventListener('change', () => {
+            markSheetDirty();
             updateMulticlassInputVisibility();
             updateClassResourceVisibility();
             updateClassResourceMaxes(levelInput?.value, null);
@@ -582,15 +718,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // UI Buttons
         allCollapseToggles?.forEach(button => button.addEventListener('click', toggleCollapse));
-        darkModeToggle?.addEventListener('click', toggleTheme);
-        longRestButton?.addEventListener('click', executeLongRest);
-        saveButton?.addEventListener('click', saveData);
-        loadFileLabel?.addEventListener('click', () => loadFileInput?.click());
-        loadFileInput?.addEventListener('change', loadData);
-        printButton?.addEventListener('click', () => window.print());
+        darkModeToggle?.addEventListener('click', toggleTheme); // No dirty flag
+        longRestButton?.addEventListener('click', () => { markSheetDirty(); executeLongRest(); }); // Mark dirty
+        saveButton?.addEventListener('click', saveData); // save resets flag
+        loadFileLabel?.addEventListener('click', () => loadFileInput?.click()); // No dirty flag
+        loadFileInput?.addEventListener('change', loadData); // load resets flag
+        printButton?.addEventListener('click', () => window.print()); // No dirty flag
+
+        // V6.9 Spell Sort Button Listeners
+        sortSpellsLevelButton?.addEventListener('click', () => sortSpells('level'));
+        sortSpellsNameButton?.addEventListener('click', () => sortSpells('name'));
     }
 
-    // --- Save/Load Functionality (V6.8 - Include initiative bonus) ---
+    // --- Save/Load Functionality (V6.9 Reverted Expertise) ---
     function saveData() {
         const characterData = {};
         const excludedContainers = ['#spell-list-content', '#weapons-list-content', '#items-list-content', '#manual-resources-list', '.slot-visual-modern'];
@@ -601,15 +741,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (excludedContainers.some(selector => input.closest(selector)) || excludedIds.includes(input.id)) return;
             if (input.id === 'classlevel' && multiclassInputGroup?.style.display === 'none') return;
             const key = input.name || input.id;
-            if (key) { characterData[key] = input.value; }
+            if (key || input.classList.contains('resource-max')) {
+                 const finalKey = key || input.id;
+                 if (finalKey) { characterData[finalKey] = input.value; }
+            }
         });
 
-        // Save checkboxes separately
+        // Save ALL relevant checkboxes (including skill proficiencies)
         form.querySelectorAll('input[type=checkbox]').forEach(input => {
             if (excludedContainers.some(selector => input.closest(selector)) || input.closest('.slot-visual-modern')) return;
             const key = input.name || input.id;
-            if (key) { characterData[key] = input.checked; }
+            if (key) {
+                characterData[key] = input.checked; // Save boolean state
+            }
         });
+
+        // V6.9 REVERTED: No expertise toggle state to save
 
         // Save Spell Slots
         characterData.spellSlots = {};
@@ -638,23 +785,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 notes: row.querySelector(`input[name="spell_notes_${index}"]`)?.value || ''
             };
         });
-        characterData.weapons = Array.from(weaponsListContent?.querySelectorAll('.attack-row') || []).map(row => ({
-            name: row.querySelector('input[name^="attack_name"]')?.value || '',
-            bonus: row.querySelector('input[name^="attack_bonus"]')?.value || '',
-            damage: row.querySelector('input[name^="attack_damage"]')?.value || '',
-            notes: row.querySelector('input[name^="attack_notes"]')?.value || ''
-        }));
-        characterData.items = Array.from(itemsListContent?.querySelectorAll('.item-row') || []).map(row => ({
-            equipped: row.querySelector('input[name^="item_equipped"]')?.checked || false,
-            name: row.querySelector('input[name^="item_name"]')?.value || '',
-            count: row.querySelector('input[name^="item_count"]')?.value || '1',
-            notes: row.querySelector('input[name^="item_notes"]')?.value || ''
-        }));
-        characterData.manualResources = Array.from(manualResourcesList?.querySelectorAll('.manual-resource-row') || []).map(row => ({
-            name: row.querySelector('.manual-resource-name')?.value || '',
-            current: row.querySelector('.manual-resource-current')?.value || '0',
-            max: row.querySelector('.manual-resource-max')?.value || '1'
-        }));
+        characterData.weapons = Array.from(weaponsListContent?.querySelectorAll('.attack-row') || []).map(row => {
+             const index = row.id.split('-').pop();
+             return {
+                 name: row.querySelector(`input[name="attack_name_${index}"]`)?.value || '',
+                 bonus: row.querySelector(`input[name="attack_bonus_${index}"]`)?.value || '',
+                 damage: row.querySelector(`input[name="attack_damage_${index}"]`)?.value || '',
+                 notes: row.querySelector(`input[name="attack_notes_${index}"]`)?.value || ''
+             };
+         });
+        characterData.items = Array.from(itemsListContent?.querySelectorAll('.item-row') || []).map(row => {
+             const index = row.id.split('-').pop();
+             return {
+                 equipped: row.querySelector(`input[name="item_equipped_${index}"]`)?.checked || false,
+                 name: row.querySelector(`input[name="item_name_${index}"]`)?.value || '',
+                 count: row.querySelector(`input[name="item_count_${index}"]`)?.value || '1',
+                 notes: row.querySelector(`input[name="item_notes_${index}"]`)?.value || ''
+             };
+         });
+        characterData.manualResources = Array.from(manualResourcesList?.querySelectorAll('.manual-resource-row') || []).map(row => {
+             const index = row.id.split('-').pop();
+             return {
+                 name: row.querySelector(`input[name="manual_resource_name_${index}"]`)?.value || '',
+                 current: row.querySelector(`input[name="manual_resource_current_${index}"]`)?.value || '0',
+                 max: row.querySelector(`input[name="manual_resource_max_${index}"]`)?.value || '1'
+             };
+        });
 
         // Create and Download JSON File
         const jsonData = JSON.stringify(characterData, null, 2);
@@ -662,14 +818,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         const charName = document.getElementById('charname')?.value || 'modern_character';
-        // Use V6.8 in filename
-        const fileName = `${charName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_dnd_sheet_v6.8.json`; // V6.8 Bump
+        const fileName = `${charName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_dnd_sheet_v6.9_reverted.json`; // Indicate expertise revert
         a.href = url;
         a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+
+        isSheetDirty = false; // Reset dirty flag after successful save
         showTemporaryMessage("Character Saved!", "success");
     }
 
@@ -688,23 +845,33 @@ document.addEventListener('DOMContentLoaded', () => {
                  if (manualResourcesList) manualResourcesList.innerHTML = '';
                  spellIndexCounter = 0; weaponIndexCounter = 0; itemIndexCounter = 0; manualResourceIndexCounter = 0;
                  spellSlotsGrid?.querySelectorAll('.slot-visual-modern').forEach(vis => vis.innerHTML = '');
+                 isSheetDirty = false; // Clear dirty flag initially for load
 
                  // --- LOAD DATA ---
                  form.querySelectorAll('input:not([type=file]):not([type=checkbox]), textarea, select').forEach(input => {
                      const key = input.name || input.id;
-                     if (!key || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list') || ['hp-total-display', 'load-file'].includes(key) || input.classList.contains('slot-total-input')) return;
-                     if (characterData.hasOwnProperty(key)) {
-                          input.value = characterData[key];
+                     const finalKey = key || (input.classList.contains('resource-max') ? input.id : null);
+                     if (!finalKey || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list') || ['hp-total-display', 'load-file'].includes(finalKey) || input.classList.contains('slot-total-input')) return;
+
+                     if (characterData.hasOwnProperty(finalKey)) {
+                          input.value = characterData[finalKey];
                      }
                  });
 
+                 // Load ALL relevant checkboxes (including skills)
                  form.querySelectorAll('input[type=checkbox]').forEach(input => {
                      const key = input.name || input.id;
                      if (!key || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list, .slot-visual-modern')) return;
                       if (characterData.hasOwnProperty(key)) {
-                          input.checked = characterData[key];
+                          // Load boolean directly
+                          input.checked = !!characterData[key]; // Ensure boolean coercion
+                     } else {
+                         // If checkbox data missing in JSON, default to unchecked
+                         input.checked = false;
                      }
                  });
+
+                 // V6.9 REVERTED: No expertise toggle state to load
 
                  // --- POST-LOAD PROCESSING for specific elements ---
                  updateMulticlassInputVisibility();
@@ -744,8 +911,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                  // --- FINAL UPDATES ---
                  updateClassResourceVisibility();
-                 updateAllCalculatedFields(); // Recalculate everything, including HP bar and initiative
+                 updateAllCalculatedFields(); // Recalculate everything
                  applyTheme(localStorage.getItem('dndSheetTheme') || 'light');
+
+                 isSheetDirty = false; // Reset dirty flag *after* successful load and updates
                  showTemporaryMessage('Character data loaded successfully!', 'success');
 
              } catch (error) {
@@ -770,26 +939,36 @@ document.addEventListener('DOMContentLoaded', () => {
                  addHandler();
              }
         }
-        initializeDefaultRowsIfEmpty(spellListContent, addSpellRowHandler);
-        initializeDefaultRowsIfEmpty(weaponsListContent, addWeaponRowHandler);
-        initializeDefaultRowsIfEmpty(itemsListContent, addItemRowHandler);
 
         const savedTheme = localStorage.getItem('dndSheetTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
 
-        // Initial UI state updates
-        updateMulticlassInputVisibility();
-        updateClassResourceVisibility();
-        updateAllCalculatedFields(); // Initial calculation (includes HP bar & initiative)
-
-        // Generate initial spell slot visuals
+        // Generate initial empty spell slot visuals
         for (let i = 1; i <= 9; i++) {
             const totalInput = document.getElementById(`modern-slots-total-${i}`);
-            if (totalInput) generateSpellSlotsVisuals(i, totalInput.value || 0);
+             if (totalInput) {
+                 generateSpellSlotsVisuals(i, totalInput.value || 0);
+            }
         }
 
+        // Setup listeners BEFORE initial calculations
         setupEventListeners();
-        console.log("Modern D&D Sheet V6.8 Initialized"); // V6.8 Bump
+        // V6.9 REVERTED: Remove call to setupProficiencyToggleListeners();
+        setupBeforeUnloadListener(); // Setup the unsaved changes warning
+
+        // Initial UI state updates & Calculation
+        updateMulticlassInputVisibility();
+        updateClassResourceVisibility();
+        updateAllCalculatedFields(); // Initial calculation
+
+        // Add default rows *after* potential load/initial calculation if lists are still empty
+         initializeDefaultRowsIfEmpty(spellListContent, addSpellRowHandler);
+         initializeDefaultRowsIfEmpty(weaponsListContent, addWeaponRowHandler);
+         initializeDefaultRowsIfEmpty(itemsListContent, addItemRowHandler);
+
+        isSheetDirty = false; // Start clean after initialization
+
+        console.log("Modern D&D Sheet V6.9 Initialized (Expertise Reverted)"); // Update log message
     }
 
     // --- Run Initialization ---

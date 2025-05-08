@@ -1,4 +1,4 @@
-// Modern D&D Character Sheet Script V6.9 (Sorting, Warning - Expertise Reverted) // V6.9 Revert Bump
+// Modern D&D Character Sheet Script V7.0 (Added Skill Expertise) // V7.0 Bump
 document.addEventListener('DOMContentLoaded', () => {
     // --- Core Selectors ---
     const form = document.getElementById('character-sheet-modern');
@@ -12,17 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hpTempInput = document.getElementById('hp-temp');
     const hpTotalDisplay = document.getElementById('hp-total-display');
     const hitDiceSpentInput = document.getElementById('hd-spent');
-    const initiativeBonusInput = document.getElementById('initiative-bonus-input'); // V6.8 Initiative Bonus
-    const initiativeDisplay = document.getElementById('initiative'); // V6.8 Initiative Display
+    const initiativeBonusInput = document.getElementById('initiative-bonus-input');
+    const initiativeDisplay = document.getElementById('initiative');
 
-    // --- Header Control Selectors (ADDED/VERIFIED) ---
+    // --- Header Control Selectors ---
     const saveButton = document.getElementById('save-button');
-    const loadFileLabel = document.querySelector('.load-button-label'); // Use querySelector for class
+    const loadFileLabel = document.querySelector('.load-button-label');
     const loadFileInput = document.getElementById('load-file');
     const printButton = document.getElementById('print-button');
     const longRestButton = document.getElementById('long-rest-button');
     const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const bodyElement = document.body; // Keep body selector
+    const bodyElement = document.body;
 
     // --- Feature Selectors ---
     const classSelect = document.getElementById('class-select');
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let weaponIndexCounter = 0;
     let itemIndexCounter = 0;
     let manualResourceIndexCounter = 0;
-    let isSheetDirty = false; // V6.9 Unsaved changes flag
+    let isSheetDirty = false;
 
     // --- Helper Functions ---
     const calculateModifier = (score) => Math.floor(((parseInt(score, 10) || 10) - 10) / 2);
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pb = calculateProficiencyBonus(level);
         if (proficiencyBonusDisplay) proficiencyBonusDisplay.textContent = formatModifier(pb);
         // Update resources dependent on PB or Level after PB is known
-        updateClassResourceMaxes(level, null);
+        updateClassResourceMaxes(level, null); // Pass current level, mods will be fetched if null
         return pb;
     }
 
@@ -86,17 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         // Update resources dependent on mods *after* all mods are calculated
-        updateClassResourceMaxes(levelInput?.value || 1, modifiers);
+        updateClassResourceMaxes(levelInput?.value || 1, modifiers); // Pass current level and new modifiers
         return modifiers;
     }
 
     function updateSavingThrows(modifiers, pb) {
-        form.querySelectorAll('.saving-throw').forEach(saveDiv => {
+        form.querySelectorAll('.saving-throw.list-item').forEach(saveDiv => { // Ensure it's a list-item to avoid other .saving-throw elements
             const checkbox = saveDiv.querySelector('.save-prof');
             const valueDisplay = saveDiv.querySelector('.save-value');
             const abilityBox = saveDiv.closest('.ability-box');
-            if (!abilityBox) return;
+            if (!abilityBox) return; // Should always find an ability box for a save
             const ability = abilityBox.id.split('-')[0];
+
             if (checkbox && valueDisplay && modifiers.hasOwnProperty(ability)) {
                 const baseModifier = modifiers[ability];
                 const totalSave = baseModifier + (checkbox.checked ? pb : 0);
@@ -105,29 +106,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-     // V6.9 REVERTED: Back to V6.8 Skill Calculation (No Expertise)
-     function updateSkills(modifiers, pb) {
+    // V7.0: Updated for Expertise
+    function updateSkills(modifiers, pb) {
         let perceptionBonus = 0;
-        // Original V6.8 selection using skill checkbox
-        form.querySelectorAll('.skill').forEach(skillDiv => {
-            const checkbox = skillDiv.querySelector('.skill-prof'); // Select the checkbox again
+        form.querySelectorAll('.skill.list-item').forEach(skillDiv => {
+            const profCheckbox = skillDiv.querySelector('.skill-prof');
+            const expertCheckbox = skillDiv.querySelector('.skill-expert'); // Added for V7.0
             const valueDisplay = skillDiv.querySelector('.skill-value');
-            // data-ability is on the checkbox in the reverted HTML
-            const ability = checkbox?.dataset.ability;
+            const ability = profCheckbox?.dataset.ability; // data-ability is on the profCheckbox
 
-            if (checkbox && valueDisplay && ability && modifiers.hasOwnProperty(ability)) {
+            if (profCheckbox && valueDisplay && ability && modifiers.hasOwnProperty(ability)) {
                 const baseModifier = modifiers[ability];
-                // Original calculation: only add PB if checkbox is checked
-                const totalSkill = baseModifier + (checkbox.checked ? pb : 0);
+                let totalSkill = baseModifier;
+
+                if (profCheckbox.checked) {
+                    totalSkill += pb;
+                    // Only add expertise bonus if proficiency is also checked
+                    if (expertCheckbox && expertCheckbox.checked) {
+                        totalSkill += pb; // Expertise adds proficiency bonus again
+                    }
+                }
+                // If profCheckbox is not checked, expertCheckbox should also be false (enforced by event listeners),
+                // so no PB from proficiency or expertise is added, which is correct.
+
                 valueDisplay.textContent = formatModifier(totalSkill);
 
                 // Specific logic for Perception to calculate Passive Perception
-                if (checkbox.id === 'perception-prof') { // Use checkbox ID
+                // Ensure we're checking the ID of the proficiency checkbox for perception
+                if (profCheckbox.id === 'perception-prof') {
                     perceptionBonus = totalSkill;
                 }
             } else if (valueDisplay && ability && modifiers.hasOwnProperty(ability)) {
-                // Fallback if checkbox somehow missing but data exists
-                 valueDisplay.textContent = formatModifier(modifiers[ability]);
+                // Fallback for some edge case where checkboxes might be missing but data exists
+                valueDisplay.textContent = formatModifier(modifiers[ability]);
             }
         });
         updatePassivePerception(perceptionBonus); // Update passive perception after skills
@@ -139,11 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ppDisplay) ppDisplay.textContent = passivePerception;
     }
 
-    // V6.8 Initiative Update
     function updateInitiative(modifiers) {
         const dexModifier = modifiers['dex'] || 0;
-        const initiativeBonus = parseInt(initiativeBonusInput?.value, 10) || 0; // Get bonus from input
-        const totalInitiative = dexModifier + initiativeBonus; // Add bonus to calculation
+        const initiativeBonus = parseInt(initiativeBonusInput?.value, 10) || 0;
+        const totalInitiative = dexModifier + initiativeBonus;
          if (initiativeDisplay) initiativeDisplay.textContent = formatModifier(totalInitiative);
     }
 
@@ -170,27 +180,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const current = parseInt(hpCurrentInput?.value, 10) || 0;
         const temp = parseInt(hpTempInput?.value, 10) || 0;
         if (hpTotalDisplay) hpTotalDisplay.textContent = current + temp;
-        updateHpBar(); // V6.8 Call HP Bar update here
+        updateHpBar();
     }
 
-    // --- V6.8: HP Bar Update Function ---
     function updateHpBar() {
         if (!hpBarCurrent || !hpBarTemp || !hpMaxInput || !hpCurrentInput || !hpTempInput) return;
 
-        const maxHp = Math.max(1, parseInt(hpMaxInput.value, 10) || 1); // Ensure maxHp is at least 1 to avoid division by zero
+        const maxHp = Math.max(1, parseInt(hpMaxInput.value, 10) || 1);
         const currentHp = parseInt(hpCurrentInput.value, 10) || 0;
         const tempHp = parseInt(hpTempInput.value, 10) || 0;
 
         const visualMaxHp = Math.max(maxHp, currentHp + tempHp, 1);
 
-        // Calculate percentages, clamping between 0 and 100
         let currentPercent = Math.max(0, Math.min(100, (currentHp / visualMaxHp) * 100));
         let tempPercent = Math.max(0, Math.min(100, (tempHp / visualMaxHp) * 100));
 
-        // Set widths and positions
         hpBarCurrent.style.width = `${currentPercent}%`;
         hpBarTemp.style.left = `${currentPercent}%`;
-        // The temporary bar's width shouldn't make the total exceed 100%
         hpBarTemp.style.width = `${Math.min(tempPercent, 100 - currentPercent)}%`;
     }
 
@@ -200,11 +206,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const pb = updateProficiencyBonus(); // Calls updateClassResourceMaxes internally
         const modifiers = updateAbilityScoresAndModifiers(); // Calls updateClassResourceMaxes internally
         updateSavingThrows(modifiers, pb);
-        updateSkills(modifiers, pb); // Calls updatePassivePerception internally (V6.9 Reverted to V6.8 logic)
-        updateInitiative(modifiers); // Now includes bonus
+        updateSkills(modifiers, pb); // V7.0: Includes expertise, calls updatePassivePerception internally
+        updateInitiative(modifiers);
         updateSpellcastingStats(modifiers, pb);
-        updateTotalHpDisplay(); // Now includes HP bar update
-        // One final call ensures everything is consistent, especially if mods/level were updated elsewhere
+        updateTotalHpDisplay(); // Includes HP bar update
+        // One final call to updateClassResourceMaxes ensures consistency if mods/level were updated elsewhere
+        // (though it's already called by PB and Mod updaters, this is a safeguard)
         updateClassResourceMaxes(levelInput?.value || 1, modifiers);
     }
 
@@ -237,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
          const removeButton = row.querySelector('.remove-spell-row-button');
          removeButton?.addEventListener('click', () => {
              row.remove();
-             markSheetDirty(); // V6.9 Mark dirty on remove
+             markSheetDirty();
         });
         return row;
     }
@@ -262,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
          const removeButton = row.querySelector('.remove-weapon-row-button');
          removeButton?.addEventListener('click', () => {
              row.remove();
-             markSheetDirty(); // V6.9 Mark dirty on remove
+             markSheetDirty();
         });
         return row;
     }
@@ -287,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
          const removeButton = row.querySelector('.remove-item-row-button');
          removeButton?.addEventListener('click', () => {
              row.remove();
-             markSheetDirty(); // V6.9 Mark dirty on remove
+             markSheetDirty();
         });
         return row;
     }
@@ -314,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
          const removeButton = row.querySelector('.remove-manual-resource-button');
          removeButton?.addEventListener('click', () => {
              row.remove();
-             markSheetDirty(); // V6.9 Mark dirty on remove
+             markSheetDirty();
         });
         return row;
     }
@@ -366,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "Druid": ["wild-shape-tracker"],
         "Fighter": [],
         "Monk": ["ki-tracker"],
-        "Paladin": ["channel-divinity-tracker"],
+        "Paladin": ["channel-divinity-tracker"], // Paladins also get Channel Divinity
         "Ranger": [], "Rogue": [],
         "Sorcerer": ["sorcery-points-tracker"],
         "Warlock": [], "Wizard": [], "Other": []
@@ -380,7 +387,8 @@ document.addEventListener('DOMContentLoaded', () => {
         resourceTrackersContainer?.querySelectorAll('.class-resource').forEach(el => el.style.display = 'none');
 
         if (isMulticlass) {
-             resourceTrackersContainer?.querySelectorAll('.class-resource').forEach(el => el.style.display = ''); // Show all
+             // Show all if "Other/Multiclass" is selected, as we don't know specific classes
+             resourceTrackersContainer?.querySelectorAll('.class-resource').forEach(el => el.style.display = '');
         } else {
             resourcesToShow.forEach(trackerId => {
                 const trackerElement = document.getElementById(trackerId);
@@ -397,18 +405,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateClassResourceMaxes(currentLevel = null, currentModifiers = null) {
         const level = parseInt(currentLevel ?? levelInput?.value, 10) || 1;
+        // Ensure modifiers are an object, even if fetching fresh
         const modifiers = currentModifiers ?? (() => { const mods = {}; form.querySelectorAll('.ability-box').forEach(box => { const scoreInput = box.querySelector('.ability-score'); if (scoreInput) mods[box.id.split('-')[0]] = calculateModifier(scoreInput.value); }); return mods; })();
+
         const fullClassLevelText = (multiclassInputGroup?.style.display !== 'none' && multiclassInput?.value) ? multiclassInput.value.toLowerCase() : "";
         const selectedSingleClass = (classSelect?.value !== 'Other' && classSelect?.value) ? classSelect.value.toLowerCase() : null;
 
         const getClassLevel = (className) => {
-             if (fullClassLevelText) {
+             if (fullClassLevelText) { // Check multiclass input first
                  const match = fullClassLevelText.match(new RegExp(className.toLowerCase() + '\\s*(\\d+)'));
                  if (match?.[1]) return parseInt(match[1], 10);
-                 return 0;
+                 return 0; // Class not found in multiclass string
              }
+             // If not multiclassing or multiclass string is empty, check single class dropdown
              if (selectedSingleClass === className.toLowerCase()) { return level; }
-             return 0;
+             return 0; // Class not selected
         };
 
         // Rage (Barbarian)
@@ -416,14 +427,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rageMaxInput) {
             const barbarianLevel = getClassLevel('barbarian');
             let maxRages = 0;
-             if (barbarianLevel >= 20) maxRages = Infinity;
+             if (barbarianLevel >= 20) maxRages = Infinity; // Or a very high number if '∞' is problematic for input type
              else if (barbarianLevel >= 17) maxRages = 6;
              else if (barbarianLevel >= 12) maxRages = 5;
              else if (barbarianLevel >= 6) maxRages = 4;
              else if (barbarianLevel >= 3) maxRages = 3;
              else if (barbarianLevel >= 1) maxRages = 2;
+             // Only update if the value actually changes to prevent unnecessary DOM manipulation
              if (rageMaxInput.value !== (maxRages === Infinity ? '∞' : maxRages.toString())) {
                  rageMaxInput.value = (maxRages === Infinity) ? '∞' : maxRages.toString();
+                 // Change input type if '∞' is used
                  rageMaxInput.type = (maxRages === Infinity) ? 'text' : 'number';
              }
         }
@@ -431,11 +444,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bardic Inspiration (Bard)
         const bardicMaxInput = document.getElementById('bardic-inspiration-max');
         if (bardicMaxInput) {
-            const chaMod = modifiers['cha'] ?? 0;
-            const newMax = Math.max(1, chaMod);
-            if (bardicMaxInput.value != newMax) {
+            const chaMod = modifiers['cha'] ?? 0; // Default to 0 if 'cha' not in modifiers
+            const newMax = Math.max(1, chaMod); // Min 1 use
+            if (bardicMaxInput.value != newMax) { // Use != for type coercion if needed, or !== if types are consistent
                  bardicMaxInput.value = newMax;
-                 bardicMaxInput.readOnly = true;
+                 bardicMaxInput.readOnly = true; // Max is calculated
              }
         }
 
@@ -443,14 +456,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const channelDivinityMaxInput = document.getElementById('channel-divinity-max');
          if (channelDivinityMaxInput) {
              const clericLevel = getClassLevel('cleric');
-             const paladinLevel = getClassLevel('paladin');
+             const paladinLevel = getClassLevel('paladin'); // Paladins also get CD
              let maxCD = 0;
+             // Cleric CD progression
              if (clericLevel >= 18) maxCD = 3;
              else if (clericLevel >= 6) maxCD = 2;
              else if (clericLevel >= 2) maxCD = 1;
-             if (paladinLevel >= 3 && clericLevel < 2) {
-                 maxCD = 1;
+
+             // Paladin CD (if Paladin has CD and Cleric doesn't meet threshold yet)
+             if (paladinLevel >= 3 && maxCD === 0) { // Only grant Paladin's CD if Cleric CD isn't already higher
+                 maxCD = 1; // Paladins get 1 use at level 3
              }
+             // Future: Consider if multiclassing stacks CD uses (RAW, they don't, you use the highest progression)
              if (channelDivinityMaxInput.value != maxCD) {
                  channelDivinityMaxInput.value = maxCD;
              }
@@ -460,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wildShapeMaxInput = document.getElementById('wild-shape-max');
         if (wildShapeMaxInput) {
             const druidLevel = getClassLevel('druid');
-            const newMax = (druidLevel >= 2) ? 2 : 0;
+            const newMax = (druidLevel >= 2) ? 2 : 0; // Druids get 2 uses at level 2
              if (wildShapeMaxInput.value != newMax) {
                  wildShapeMaxInput.value = newMax;
              }
@@ -470,10 +487,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const kiMaxInput = document.getElementById('ki-max');
         if (kiMaxInput) {
             const monkLevel = getClassLevel('monk');
-            const newMax = Math.max(0, monkLevel);
+            const newMax = Math.max(0, monkLevel); // Ki points equal Monk level
             if (kiMaxInput.value != newMax) {
                 kiMaxInput.value = newMax;
-                kiMaxInput.readOnly = true;
+                kiMaxInput.readOnly = true; // Max is calculated
             }
         }
 
@@ -481,10 +498,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const sorcPointsMaxInput = document.getElementById('sorcery-points-max');
         if (sorcPointsMaxInput) {
             const sorcLevel = getClassLevel('sorcerer');
-            const newMax = Math.max(0, sorcLevel);
-             if (sorcPointsMaxInput.value != newMax) {
+            const newMax = Math.max(0, sorcLevel); // Sorcery points equal Sorcerer level (starting at level 2, but features grant them)
+             if (sorcPointsMaxInput.value != newMax) { // Sorcerers get points equal to level from L2, but 0 before
                  sorcPointsMaxInput.value = newMax;
-                 sorcPointsMaxInput.readOnly = true;
+                 sorcPointsMaxInput.readOnly = true; // Max is calculated
             }
         }
     }
@@ -520,7 +537,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const maxInput = tracker.querySelector('.resource-max');
                 if (currentInput && maxInput) {
                     if (maxInput.type === 'text' && maxInput.value === '∞') {
-                        currentInput.value = currentInput.max || 99;
+                        // For '∞' rages, set to a high practical number or keep current if max is truly unlimited
+                        currentInput.value = currentInput.max || 99; // Or perhaps leave as is if meant to be unlimited and manually managed
                     } else {
                         currentInput.value = maxInput.value;
                     }
@@ -585,10 +603,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { messageDiv.remove(); }, 500); // Remove after fade out
         }, 2500); // Message visible for 2.5 seconds
     }
-
-    // --- V6.9 REVERTED: Proficiency Toggle Logic Removed ---
-    // function setupProficiencyToggleListeners() { ... }
-    // function updateProficiencyToggleVisual(toggleElement) { ... }
 
     // --- V6.9: Spell Sorting ---
     const sortSpellsLevelButton = document.getElementById('sort-spells-level');
@@ -657,29 +671,64 @@ document.addEventListener('DOMContentLoaded', () => {
         levelInput?.addEventListener('input', () => { markSheetDirty(); updateAllCalculatedFields(); });
         form.querySelectorAll('.ability-score').forEach(input => input.addEventListener('input', () => { markSheetDirty(); updateAllCalculatedFields(); }));
         // Listen to ALL prof-toggle checkboxes (saves AND skills)
-        form.querySelectorAll('.prof-toggle').forEach(toggle => toggle.addEventListener('change', () => { markSheetDirty(); updateAllCalculatedFields(); }));
+        form.querySelectorAll('.prof-toggle').forEach(toggle => { // This class is on save-prof and skill-prof
+            toggle.addEventListener('change', () => {
+                markSheetDirty();
+                 // V7.0: If this is a skill-prof checkbox and it's unchecked, uncheck its corresponding expertise
+                if (toggle.classList.contains('skill-prof') && !toggle.checked) {
+                    const skillDiv = toggle.closest('.skill.list-item');
+                    if (skillDiv) {
+                        const expertCheckbox = skillDiv.querySelector('.skill-expert');
+                        if (expertCheckbox && expertCheckbox.checked) {
+                            expertCheckbox.checked = false;
+                            // No need to call updateAllCalculatedFields() again here, as it's called below
+                        }
+                    }
+                }
+                updateAllCalculatedFields();
+            });
+        });
+
+        // V7.0: Listener for NEW skill expertise checkboxes
+        form.querySelectorAll('.skill-expert').forEach(expertCheckbox => {
+            expertCheckbox.addEventListener('change', () => {
+                markSheetDirty(); // Expertise change dirties the sheet
+                const skillDiv = expertCheckbox.closest('.skill.list-item');
+                if (skillDiv) {
+                    const profCheckbox = skillDiv.querySelector('.skill-prof');
+                    if (profCheckbox && expertCheckbox.checked && !profCheckbox.checked) {
+                        expertCheckbox.checked = false; // Prevent checking expert if not proficient
+                        showTemporaryMessage("Expertise requires proficiency in the skill.", "error");
+                    }
+                }
+                updateAllCalculatedFields(); // Recalculate all fields after expertise change
+            });
+        });
+
+
         spellcastingAbilitySelect?.addEventListener('change', () => { markSheetDirty(); updateAllCalculatedFields(); });
         hpCurrentInput?.addEventListener('input', () => { markSheetDirty(); updateTotalHpDisplay(); });
         hpTempInput?.addEventListener('input', () => { markSheetDirty(); updateTotalHpDisplay(); });
         hpMaxInput?.addEventListener('input', () => { markSheetDirty(); updateTotalHpDisplay(); });
         initiativeBonusInput?.addEventListener('input', () => { markSheetDirty(); updateAllCalculatedFields(); });
-        multiclassInput?.addEventListener('input', () => { markSheetDirty(); updateClassResourceMaxes(levelInput?.value, null); });
+        multiclassInput?.addEventListener('input', () => { markSheetDirty(); updateClassResourceMaxes(levelInput?.value, null); }); // Pass null for modifiers so it fetches fresh
 
-        // General listener for other inputs/textareas/selects
+        // General listener for other inputs/textareas/selects to mark sheet dirty
         form.addEventListener('input', (event) => {
              if (event.target.matches('input:not([type=file]):not([type=checkbox]), textarea, select')) {
+                 // Avoid double-marking if handled by a more specific listener above
                  const isHandledSpecifically = event.target.closest('.ability-score, #level, #hp-current, #hp-temp, #hp-max, #initiative-bonus-input, #classlevel, .slot-total-input');
                  if (!isHandledSpecifically) {
                     markSheetDirty();
                  }
              }
         });
-        // General listener for checkboxes/selects
+        // General listener for checkboxes/selects to mark sheet dirty (if not already handled)
         form.addEventListener('change', (event) => {
             if (event.target.matches('input[type=checkbox], select')) {
                 // Exclude elements handled by specific listeners or UI controls
-                const isHandledSpecifically = event.target.closest('.prof-toggle, #spellcasting-ability, .slot-visual-modern input[type="checkbox"]');
-                const isUIControl = event.target.closest('#dark-mode-toggle');
+                const isHandledSpecifically = event.target.closest('.prof-toggle, .skill-expert, #spellcasting-ability, .slot-visual-modern input[type="checkbox"]');
+                const isUIControl = event.target.closest('#dark-mode-toggle'); // Dark mode toggle shouldn't dirty
                 if (!isHandledSpecifically && !isUIControl) {
                     markSheetDirty();
                 }
@@ -692,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addItemButton?.addEventListener('click', () => { markSheetDirty(); addItemRowHandler(); });
         addManualResourceButton?.addEventListener('click', () => { markSheetDirty(); addManualResourceHandler(); });
 
-        // V6.9 Remove button clicks handled in createXXXRow
+        // Remove button clicks handled in createXXXRow functions will also call markSheetDirty
 
         // Spell Slot Total Input Change (Add dirty flag)
         spellSlotsGrid?.addEventListener('input', (event) => {
@@ -701,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 spellSlotTotalChangeHandler(event);
             }
         });
-        // V6.9 Spell Slot Checkbox Change
+        // Spell Slot Checkbox Change (mark dirty)
         spellSlotsGrid?.addEventListener('change', (event) => {
              if (event.target.matches('.slot-visual-modern input[type="checkbox"]')) {
                 markSheetDirty();
@@ -713,50 +762,56 @@ document.addEventListener('DOMContentLoaded', () => {
             markSheetDirty();
             updateMulticlassInputVisibility();
             updateClassResourceVisibility();
-            updateClassResourceMaxes(levelInput?.value, null);
+            updateClassResourceMaxes(levelInput?.value, null); // Recalculate class resources
         });
 
         // UI Buttons
         allCollapseToggles?.forEach(button => button.addEventListener('click', toggleCollapse));
-        darkModeToggle?.addEventListener('click', toggleTheme); // No dirty flag
-        longRestButton?.addEventListener('click', () => { markSheetDirty(); executeLongRest(); }); // Mark dirty
+        darkModeToggle?.addEventListener('click', toggleTheme); // No dirty flag for theme
+        longRestButton?.addEventListener('click', () => { markSheetDirty(); executeLongRest(); }); // Long rest modifies data
         saveButton?.addEventListener('click', saveData); // save resets flag
-        loadFileLabel?.addEventListener('click', () => loadFileInput?.click()); // No dirty flag
-        loadFileInput?.addEventListener('change', loadData); // load resets flag
-        printButton?.addEventListener('click', () => window.print()); // No dirty flag
+        loadFileLabel?.addEventListener('click', () => loadFileInput?.click()); // No dirty flag for triggering load
+        loadFileInput?.addEventListener('change', loadData); // load resets flag after success
+        printButton?.addEventListener('click', () => window.print()); // No dirty flag for print
 
         // V6.9 Spell Sort Button Listeners
         sortSpellsLevelButton?.addEventListener('click', () => sortSpells('level'));
         sortSpellsNameButton?.addEventListener('click', () => sortSpells('name'));
     }
 
-    // --- Save/Load Functionality (V6.9 Reverted Expertise) ---
+    // --- Save/Load Functionality (V7.0 - Expertise checkboxes handled by general checkbox logic) ---
     function saveData() {
         const characterData = {};
         const excludedContainers = ['#spell-list-content', '#weapons-list-content', '#items-list-content', '#manual-resources-list', '.slot-visual-modern'];
-        const excludedIds = ['hp-total-display', 'load-file'];
+        const excludedIds = ['hp-total-display', 'load-file']; // Elements not to save directly
 
-        // Save standard form fields
+        // Save standard form fields (inputs, textareas, selects that are NOT checkboxes)
         form.querySelectorAll('input:not([type=file]):not([type=checkbox]), textarea, select').forEach(input => {
+            // Skip if inside an excluded dynamic list container or is an excluded ID
             if (excludedContainers.some(selector => input.closest(selector)) || excludedIds.includes(input.id)) return;
+            // Skip multiclass input if not visible
             if (input.id === 'classlevel' && multiclassInputGroup?.style.display === 'none') return;
+
             const key = input.name || input.id;
-            if (key || input.classList.contains('resource-max')) {
-                 const finalKey = key || input.id;
-                 if (finalKey) { characterData[finalKey] = input.value; }
+            // Also include resource-max inputs even if they don't have a name (using ID)
+            if (key || input.classList.contains('resource-max')) { // Some resource-max might only have ID
+                 const finalKey = key || input.id; // Prioritize name, fallback to id
+                 if (finalKey) { // Ensure there's a key
+                    characterData[finalKey] = input.value;
+                 }
             }
         });
 
-        // Save ALL relevant checkboxes (including skill proficiencies)
+        // Save ALL relevant checkboxes (including skill proficiencies and expertise)
         form.querySelectorAll('input[type=checkbox]').forEach(input => {
+            // Skip if inside an excluded dynamic list container or visual spell slots
             if (excludedContainers.some(selector => input.closest(selector)) || input.closest('.slot-visual-modern')) return;
+
             const key = input.name || input.id;
-            if (key) {
+            if (key) { // Ensure there's a key
                 characterData[key] = input.checked; // Save boolean state
             }
         });
-
-        // V6.9 REVERTED: No expertise toggle state to save
 
         // Save Spell Slots
         characterData.spellSlots = {};
@@ -774,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Save Dynamic Lists
         characterData.spells = Array.from(spellListContent?.querySelectorAll('.spell-row') || []).map((row) => {
-            const index = row.id.split('-').pop();
+            const index = row.id.split('-').pop(); // Get unique index from row ID
             return {
                 prepared: row.querySelector(`input[name="spell_prepared_${index}"]`)?.checked || false,
                 level: row.querySelector(`input[name="spell_level_${index}"]`)?.value || '',
@@ -818,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         const charName = document.getElementById('charname')?.value || 'modern_character';
-        const fileName = `${charName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_dnd_sheet_v6.9_reverted.json`; // Indicate expertise revert
+        const fileName = `${charName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_dnd_sheet_v7.0.json`; // V7.0 Bump in filename
         a.href = url;
         a.download = fileName;
         document.body.appendChild(a);
@@ -851,6 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  form.querySelectorAll('input:not([type=file]):not([type=checkbox]), textarea, select').forEach(input => {
                      const key = input.name || input.id;
                      const finalKey = key || (input.classList.contains('resource-max') ? input.id : null);
+                     // Exclude dynamic list elements and specific non-data IDs, and spell slot totals (handled separately)
                      if (!finalKey || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list') || ['hp-total-display', 'load-file'].includes(finalKey) || input.classList.contains('slot-total-input')) return;
 
                      if (characterData.hasOwnProperty(finalKey)) {
@@ -858,12 +914,13 @@ document.addEventListener('DOMContentLoaded', () => {
                      }
                  });
 
-                 // Load ALL relevant checkboxes (including skills)
+                 // Load ALL relevant checkboxes (including skills proficiency and expertise)
                  form.querySelectorAll('input[type=checkbox]').forEach(input => {
                      const key = input.name || input.id;
+                     // Exclude dynamic list checkboxes and spell slot visual checkboxes (handled separately)
                      if (!key || input.closest('#spell-list-content, #weapons-list-content, #items-list-content, #manual-resources-list, .slot-visual-modern')) return;
+
                       if (characterData.hasOwnProperty(key)) {
-                          // Load boolean directly
                           input.checked = !!characterData[key]; // Ensure boolean coercion
                      } else {
                          // If checkbox data missing in JSON, default to unchecked
@@ -871,10 +928,8 @@ document.addEventListener('DOMContentLoaded', () => {
                      }
                  });
 
-                 // V6.9 REVERTED: No expertise toggle state to load
-
                  // --- POST-LOAD PROCESSING for specific elements ---
-                 updateMulticlassInputVisibility();
+                 updateMulticlassInputVisibility(); // Show/hide multiclass input based on loaded class_select
 
                  // Load Dynamic Lists
                  characterData.spells?.forEach(data => { if (spellListContent) spellListContent.appendChild(createSpellRow(spellIndexCounter++, data)); });
@@ -889,20 +944,21 @@ document.addEventListener('DOMContentLoaded', () => {
                          const totalInput = document.getElementById(`modern-slots-total-${level}`);
                          if (slotData && totalInput) {
                              let loadedTotal = parseInt(slotData.total, 10) || 0;
-                             loadedTotal = Math.min(Math.max(loadedTotal, 0), 6);
+                             loadedTotal = Math.min(Math.max(loadedTotal, 0), 6); // Cap at 0-6
                              totalInput.value = loadedTotal;
-                             generateSpellSlotsVisuals(level, loadedTotal);
+                             generateSpellSlotsVisuals(level, loadedTotal); // Generate visual slots
 
                              if (slotData.used && Array.isArray(slotData.used)) {
                                  slotData.used.forEach(usedIndexStr => {
                                      const usedIndex = parseInt(usedIndexStr, 10);
+                                     // Check if the visual slot exists (it should if total is > 0)
                                      if (!isNaN(usedIndex) && usedIndex > 0 && usedIndex <= loadedTotal) {
                                          const checkbox = document.getElementById(`modern_slot_lvl${level}_used_${usedIndex}`);
                                          if (checkbox) checkbox.checked = true;
                                      }
                                  });
                              }
-                         } else if (totalInput) {
+                         } else if (totalInput) { // If no slotData but input exists, reset it
                              totalInput.value = '0';
                              generateSpellSlotsVisuals(level, 0);
                          }
@@ -910,9 +966,9 @@ document.addEventListener('DOMContentLoaded', () => {
                  }
 
                  // --- FINAL UPDATES ---
-                 updateClassResourceVisibility();
-                 updateAllCalculatedFields(); // Recalculate everything
-                 applyTheme(localStorage.getItem('dndSheetTheme') || 'light');
+                 updateClassResourceVisibility(); // Update visibility based on loaded class
+                 updateAllCalculatedFields(); // Recalculate everything based on loaded data
+                 applyTheme(localStorage.getItem('dndSheetTheme') || 'light'); // Apply saved theme
 
                  isSheetDirty = false; // Reset dirty flag *after* successful load and updates
                  showTemporaryMessage('Character data loaded successfully!', 'success');
@@ -921,54 +977,55 @@ document.addEventListener('DOMContentLoaded', () => {
                  console.error("Error loading or parsing file:", error);
                  showTemporaryMessage('Error loading character data. File might be corrupt or invalid.', 'error');
              } finally {
+                 // Reset file input so the same file can be loaded again if needed
                  if (loadFileInput) loadFileInput.value = '';
              }
          };
          reader.onerror = () => {
             showTemporaryMessage('Error reading file.', 'error');
-            if (loadFileInput) loadFileInput.value = '';
+            if (loadFileInput) loadFileInput.value = ''; // Reset file input on error too
         };
          reader.readAsText(file);
     }
 
     // --- Initial Setup ---
     function initializeSheet() {
-        // Add default rows if lists are empty
+        // Add default rows if lists are empty (e.g., for new characters)
         function initializeDefaultRowsIfEmpty(container, addHandler) {
-             if (container && !container.querySelector(':scope > *')) {
-                 addHandler();
+             if (container && !container.querySelector(':scope > *')) { // Check if container is empty
+                 addHandler(); // Add one default row
              }
         }
 
         const savedTheme = localStorage.getItem('dndSheetTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
 
-        // Generate initial empty spell slot visuals
+        // Generate initial empty spell slot visuals based on default '0' values in HTML
         for (let i = 1; i <= 9; i++) {
             const totalInput = document.getElementById(`modern-slots-total-${i}`);
-             if (totalInput) {
+             if (totalInput) { // Should always exist due to inline script in HTML
                  generateSpellSlotsVisuals(i, totalInput.value || 0);
             }
         }
 
         // Setup listeners BEFORE initial calculations
         setupEventListeners();
-        // V6.9 REVERTED: Remove call to setupProficiencyToggleListeners();
         setupBeforeUnloadListener(); // Setup the unsaved changes warning
 
         // Initial UI state updates & Calculation
         updateMulticlassInputVisibility();
         updateClassResourceVisibility();
-        updateAllCalculatedFields(); // Initial calculation
+        updateAllCalculatedFields(); // Initial calculation of all derived values
 
         // Add default rows *after* potential load/initial calculation if lists are still empty
          initializeDefaultRowsIfEmpty(spellListContent, addSpellRowHandler);
          initializeDefaultRowsIfEmpty(weaponsListContent, addWeaponRowHandler);
          initializeDefaultRowsIfEmpty(itemsListContent, addItemRowHandler);
+         // No default manual resource needed usually
 
         isSheetDirty = false; // Start clean after initialization
 
-        console.log("Modern D&D Sheet V6.9 Initialized (Expertise Reverted)"); // Update log message
+        console.log("Modern D&D Sheet V7.0 Initialized (Added Skill Expertise)"); // V7.0 Bump in log
     }
 
     // --- Run Initialization ---

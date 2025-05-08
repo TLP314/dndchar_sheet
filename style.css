@@ -172,7 +172,7 @@ body[data-theme="dark"] #dark-mode-toggle:hover { background-color: #e2e8f0; }
 .saves-skills-list .list-item {
     display: grid;
     /* Columns: prof-cb (16px) | expert-cb/spacer (16px) | value (35px) | label (1fr) */
-    grid-template-columns: 16px 30px 35px 1fr;
+    grid-template-columns: 16px 20px 35px 1fr;
     column-gap: 6px; /* Consistent gap between elements */
     align-items: center;
     padding-bottom: 5px;

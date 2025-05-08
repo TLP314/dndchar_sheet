@@ -1,4 +1,4 @@
-/* === MODERN D&D SHEET STYLES V6.9 === */ /* V6.9 Bump */
+/* === MODERN D&D SHEET STYLES V7.0 === */ /* V7.0 Bump */
 
 /* --- Imports & Variables --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -156,40 +156,81 @@ body[data-theme="dark"] #dark-mode-toggle:hover { background-color: #e2e8f0; }
 
 
 /* Abilities */
-/* Abilities */
 .abilities-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 15px; }
 .ability-box { border: 1px solid var(--border-color); padding: 15px 12px; border-radius: var(--border-radius); background: transparent; }
 .score-mod-group { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; justify-content: center; }
 .ability-score { font-size: 1.3em; font-weight: 600; width: 70px; }
 .ability-mod { font-size: 1.1em; min-width: 45px; flex-shrink: 0; }
-.saves-skills-list { display: flex; flex-direction: column; gap: 6px; /* Original gap */ }
-.list-item { display: flex; align-items: center; gap: 8px; padding-bottom: 5px; border-bottom: 1px dotted var(--border-color-light); }
-.list-item:last-child { border-bottom: none; padding-bottom: 0; }
 
-/* Restore label style for skills */
-.list-item label {
+/* Saves & Skills List - MODIFIED SECTION */
+.saves-skills-list {
+    display: flex;
+    flex-direction: column;
+    /* gap: 6px; /* Original gap, removed as item padding/border handles vertical separation */
+}
+
+.saves-skills-list .list-item {
+    display: grid;
+    /* Columns: prof-cb (16px) | expert-cb/spacer (16px) | value (35px) | label (1fr) */
+    grid-template-columns: 16px 30px 35px 1fr;
+    column-gap: 6px; /* Consistent gap between elements */
+    align-items: center;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-bottom: 1px dotted var(--border-color-light);
+}
+.saves-skills-list .list-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.saves-skills-list .list-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0; /* Ensure no extra margins from browser defaults */
+    padding: 0;
+    /* flex-shrink: 0; /* Not needed for grid items */
+}
+
+.saves-skills-list .list-item input[type="checkbox"].skill-expert {
+    accent-color: var(--success-color); /* Green for expertise checkbox */
+    /* margin-left: 2px; /* Removed, rely on grid-gap */
+}
+
+.saves-skills-list .list-item .calculated-value {
+    font-size: 0.9em;
+    /* min-width: 35px; /* Column definition handles width */
+    padding: 3px 6px;
+    text-align: center;
+    /* margin: 0 4px; /* Removed, rely on grid-gap */
+    justify-self: center; /* Center the value box within its 35px grid cell */
+    box-sizing: border-box; /* Ensure padding is included in width if needed by browser */
+    width: 100%; /* Make it fill the 35px cell */
+}
+
+.saves-skills-list .list-item label {
     font-size: 0.9em;
     font-weight: 400;
     text-transform: none;
     color: var(--text-color-light);
     margin: 0;
-    flex-grow: 1;
-    cursor: pointer; /* Make label clickable for checkbox */
+    /* flex-grow: 1; /* Not needed with 1fr grid column */
+    cursor: pointer;
 }
-/* Ensure checkbox is aligned */
-.list-item input[type="checkbox"].prof-toggle {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px; /* Add space back between checkbox and value */
-    flex-shrink: 0;
+
+/* Specific placement for saving throw items to align them */
+.saving-throw.list-item .prof-toggle.save-prof {
+    /* This will naturally fall into the first grid column (16px) */
+    grid-column: 1 / 2; /* Explicitly state it's in the first column */
 }
-.list-item .calculated-value { font-size: 0.9em; min-width: 35px; padding: 3px 6px; }
-body[data-theme="dark"] .list-item { border-color: var(--border-color-light); }
-/* Saving Throw checkbox remains the same */
-/*.list-item .save-prof { margin-right: 0; /* Adjust if needed */
-.list-item label[for$="-save-prof"] { /* Keep style for save label */
-    font-size: 0.9em; font-weight: 400; text-transform: none; color: var(--text-color-light); margin: 0; flex-grow: 1; cursor: pointer;
+
+.saving-throw.list-item .save-value {
+    grid-column-start: 3; /* Start in the 3rd column (value column, skipping the expertise slot) */
 }
+.saving-throw.list-item > label { /* Target direct child label of saving-throw item */
+    grid-column-start: 4; /* Start in the 4th column (label column) */
+}
+/* END OF MODIFIED SECTION for Saves & Skills List alignment */
 
 
 /* Resources Section V6.7 Consistency */
@@ -411,23 +452,26 @@ body[data-theme="dark"] .list-item { border-color: var(--border-color-light); }
     .dynamic-list-controls { display: none; }
     .resource-tracker { padding: 3px 5px; }
     .resource-values input[type=number] { width: 40px; }
-    /* V6.9 Print styles for Proficiency Toggles */
-    .proficiency-toggle {
-        border: 1px solid #bbb !important;
-        background-color: #fff !important; /* Remove background color */
-        color: #000 !important; /* Ensure text is visible */
-        width: auto !important; /* Let content determine width */
-        padding: 0 3px;
-        height: auto;
-        line-height: normal;
-        font-size: 8pt;
+
+    /* Print styles for proficiency and expertise checkboxes (assuming standard appearance) */
+    .prof-toggle.skill-prof, .skill-expert {
+        appearance: checkbox !important;
+        -webkit-appearance: checkbox !important;
+        -moz-appearance: checkbox !important;
+        border: 1px solid #333 !important;
+        background-color: #fff !important;
+        margin-right: 2px !important; /* Consistent margin for print */
     }
-    .proficiency-toggle[data-proficiency="none"]::before { content: '[ ]'; }
-    .proficiency-toggle[data-proficiency="proficient"]::before { content: '[P]'; font-weight: bold; }
-    .proficiency-toggle[data-proficiency="expert"]::before { content: '[E]'; font-weight: bold; }
-    .proficiency-toggle { text-indent: -9999px; line-height: 0; } /* Hide original text visually */
-    .proficiency-toggle::before { text-indent: 0; display: inline-block; line-height: initial; } /* Show pseudo-element */
-    .list-item label[for$="-save-prof"] { font-size: inherit; } /* Inherit font size */
+    .prof-toggle.skill-prof:checked, .skill-expert:checked {
+        background-color: #ccc !important; /* Simple checked state for print */
+    }
+    .skill-expert:checked {
+         background-color: #b3e6b3 !important; /* Light green for checked expertise */
+    }
+    /* Hide any problematic ::before from old systems if they still linger on .prof-toggle */
+    .prof-toggle::before { display: none !important; }
+    .prof-toggle { text-indent: 0 !important; line-height: initial !important; }
+    .list-item label[for$="-save-prof"] { font-size: inherit; }
 
     .sheet-footer { display: none; }
 }
